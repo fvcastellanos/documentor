@@ -1,14 +1,15 @@
 package net.cavitos.documentor.domain;
 
 import java.time.Instant;
+import java.util.List;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.TextScore;
 
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -23,8 +24,13 @@ public class ImageDocument {
     private String id;
     private String name;
     private String description;
+    private List<String> tags;
     private String path;
     private String tenantId;
+
+    @CreatedDate
     private Instant created;
-    private Instant updated;
+
+    @TextScore
+    private float score;
 }
