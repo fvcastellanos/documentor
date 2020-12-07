@@ -3,6 +3,7 @@ package net.cavitos.documentor.domain;
 import java.time.Instant;
 import java.util.List;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -25,9 +26,11 @@ public class ImageDocument {
     @Id
     private String id;
 
+    @Max(150)
     @NotEmpty
     private String name;
 
+    @Max(300)
     private String description;
 
     private List<String> tags;
@@ -35,6 +38,7 @@ public class ImageDocument {
     @NotEmpty
     private String path;
 
+    @Max(50)
     @NotEmpty
     private String tenantId;
 
