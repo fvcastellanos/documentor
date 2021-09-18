@@ -6,14 +6,17 @@ import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import net.cavitos.documentor.domain.ImageDocument;
+import net.cavitos.documentor.repository.TenantRepository;
 
 public class DocumentValidator implements Validator {
 
-    private LocalValidatorFactoryBean validator;
+    final private LocalValidatorFactoryBean validator;
+    final private TenantRepository tenantRepository;
 
-    public DocumentValidator(LocalValidatorFactoryBean validator) {
+    public DocumentValidator(LocalValidatorFactoryBean validator, TenantRepository tenantRepository) {
 
         this.validator = validator;
+        this.tenantRepository = tenantRepository;
     }
 
     @Override
@@ -28,5 +31,21 @@ public class DocumentValidator implements Validator {
 
         validator.validate(target, bindingResult);
         errors.addAllErrors(bindingResult);
+
+        if (!errors.hasFieldErrors()) {
+
+            var document = (ImageDocument) target;
+            validateTenantId(document.getTenantId(), errors);
+        }
     } 
+
+    private void validateTenantId(String tenantId, Errors errors) {
+
+        var tenantHolder = tenantRepository.findByTenantId(tenantId);
+
+        if (tenantHolder.isEmpty()) {
+
+            errors.rejectValue("tenantId", "tenantId.not.found");
+        }
+    }
 }

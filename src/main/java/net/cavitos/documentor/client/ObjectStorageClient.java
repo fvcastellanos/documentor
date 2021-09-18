@@ -1,7 +1,11 @@
 package net.cavitos.documentor.client;
 
+import java.util.Optional;
+
+import org.springframework.web.multipart.MultipartFile;
+
 public interface ObjectStorageClient {
 
-    String storeDocument(byte[] content);
-    
+    Optional<String> storeDocument(MultipartFile multipartFile, String tenantId);
+    void removeDocument(String fileName);
 }

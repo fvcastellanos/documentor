@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -26,11 +27,11 @@ public class ImageDocument {
     @Id
     private String id;
 
-    @Max(150)
     @NotEmpty
+    @Size(max = 150)
     private String name;
 
-    @Max(300)
+    @Size(max = 300)
     private String description;
 
     private List<String> tags;
@@ -38,8 +39,8 @@ public class ImageDocument {
     @NotEmpty
     private String path;
 
-    @Max(50)
     @NotEmpty
+    @Size(max = 50)
     private String tenantId;
 
     @CreatedDate
