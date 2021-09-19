@@ -9,5 +9,4 @@ public class DocumentorApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(DocumentorApplication.class, args);
 	}
-
 }
