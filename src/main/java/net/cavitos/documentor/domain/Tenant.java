@@ -5,9 +5,11 @@ import java.time.Instant;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.EqualsAndHashCode;
@@ -26,20 +28,23 @@ public class Tenant {
     private String id;
 
     @NotEmpty
-    @Max(200)
+    @Size(max = 200)
     private String name;
 
-    @Max(50)
     @NotEmpty
+    @Size(max = 50)
+    @Indexed(unique = true, name = "idx_tenants_tenantId")
     private String tenantId;
 
-    @Max(50)
+    @Size(max = 50)
     private String parentTenantId;
 
     @Email
-    @Max(250)
+    @Size(max = 250)
+    @Indexed(unique = true, name = "idx_tenants_email")
     private String email;
 
     @CreatedDate
     private Instant created;
 }
+
