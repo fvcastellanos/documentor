@@ -7,6 +7,8 @@ import javax.validation.constraints.NotNull;
 
 import net.cavitos.documentor.domain.Upload;
 import net.cavitos.documentor.repository.UploadRepository;
+import net.cavitos.documentor.service.UploadService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,20 +33,27 @@ public class UploadDocumentController {
     @Autowired
     private ObjectStorageClient objectStorageClient;
 
+    @Autowired
+    private UploadService uploadService;
+
     @PostMapping("/documents/upload/{tenantId}")
     public ResponseEntity<String> uploadDocument(@PathVariable("tenantId") String tenantId,
                                                  @Valid @NotNull @RequestParam("files") List<MultipartFile> files) {
 
         LOGGER.info("files to be uploaded: {} for tenantId: {}", files.size(), tenantId);
 
-        files.forEach(file -> objectStorageClient.storeDocument(file, tenantId)
-                .ifPresent(fileName -> {
-                        uploadRepository.save(buildUpload(tenantId, fileName));
-                        LOGGER.info("store document file: {} for tenantId: {}", file, tenantId);
-                }));
+        // files.forEach(file -> objectStorageClient.storeDocument(file, tenantId)
+        //         .ifPresent(fileName -> {
+        //                 uploadRepository.save(buildUpload(tenantId, fileName));
+        //                 LOGGER.info("store document file: {} for tenantId: {}", file, tenantId);
+        //         }));
+
+        uploadService.storeDocument(tenantId, files);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
+
+    // ------------------------------------------------------------------------------------------
 
     private Upload buildUpload(String tenantId, String fileName) {
 
