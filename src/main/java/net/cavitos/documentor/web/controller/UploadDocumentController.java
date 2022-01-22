@@ -4,10 +4,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
-import net.cavitos.documentor.domain.Upload;
-import net.cavitos.documentor.repository.UploadRepository;
-import net.cavitos.documentor.service.UploadService;
+import javax.validation.constraints.Size;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import net.cavitos.documentor.client.ObjectStorageClient;
+import io.vavr.control.Try;
+import net.cavitos.documentor.domain.model.ImageDocument;
+import net.cavitos.documentor.domain.response.ErrorResponse;
+import net.cavitos.documentor.service.UploadService;
 
 @RestController
 public class UploadDocumentController {
@@ -28,40 +28,25 @@ public class UploadDocumentController {
     private static final Logger LOGGER = LoggerFactory.getLogger(UploadDocumentController.class);
 
     @Autowired
-    private UploadRepository uploadRepository;
-
-    @Autowired
-    private ObjectStorageClient objectStorageClient;
-
-    @Autowired
     private UploadService uploadService;
 
     @PostMapping("/documents/upload/{tenantId}")
-    public ResponseEntity<String> uploadDocument(@PathVariable("tenantId") String tenantId,
+    public ResponseEntity<ImageDocument> uploadDocument(@PathVariable("tenantId") String tenantId,
+                                                 @Valid @NotNull @Size(max = 150) @RequestParam String documentId,
                                                  @Valid @NotNull @RequestParam("files") List<MultipartFile> files) {
 
         LOGGER.info("files to be uploaded: {} for tenantId: {}", files.size(), tenantId);
 
-        // files.forEach(file -> objectStorageClient.storeDocument(file, tenantId)
-        //         .ifPresent(fileName -> {
-        //                 uploadRepository.save(buildUpload(tenantId, fileName));
-        //                 LOGGER.info("store document file: {} for tenantId: {}", file, tenantId);
-        //         }));
+        final var result = uploadService.storeDocument(tenantId, documentId, files);
 
-        uploadService.storeDocument(tenantId, files);
+        if (result.isRight()) {
 
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
+            return new ResponseEntity<ImageDocument>(result.get(), HttpStatus.CREATED);
+        }
 
-    // ------------------------------------------------------------------------------------------
+        var error = new ErrorResponse();
+        error.setMessage(result.getLeft());
 
-    private Upload buildUpload(String tenantId, String fileName) {
-
-        var upload = new Upload();
-        upload.setStored(false);
-        upload.setTenantId(tenantId);
-        upload.setFile(fileName);
-
-        return upload;
+        return new ResponseEntity<ErrorResponse>(error, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 }

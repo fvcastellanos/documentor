@@ -5,7 +5,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-import net.cavitos.documentor.domain.Tenant;
+import net.cavitos.documentor.domain.model.Tenant;
 
 public class TenantValidator implements Validator {
 

@@ -1,4 +1,4 @@
-package net.cavitos.documentor.domain;
+package net.cavitos.documentor.domain.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -16,7 +16,7 @@ import java.time.Instant;
 @Setter
 @ToString
 @EqualsAndHashCode
-@Document(collection = "uploads")
+// @Document(collection = "uploads")
 public class Upload {
 
     @Id
@@ -28,6 +28,10 @@ public class Upload {
 
     @NotEmpty
     private String file;
+
+    @NotEmpty
+    @Size(max = 150)
+    private String uploadName;
 
     private boolean stored;
 

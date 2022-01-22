@@ -5,7 +5,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-import net.cavitos.documentor.domain.ImageDocument;
+import net.cavitos.documentor.domain.model.ImageDocument;
 import net.cavitos.documentor.repository.TenantRepository;
 
 public class DocumentValidator implements Validator {

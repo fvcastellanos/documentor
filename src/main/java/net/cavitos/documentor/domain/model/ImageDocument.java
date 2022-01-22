@@ -1,4 +1,4 @@
-package net.cavitos.documentor.domain;
+package net.cavitos.documentor.domain.model;
 
 import java.time.Instant;
 import java.util.List;
@@ -37,6 +37,8 @@ public class ImageDocument {
 
     @NotEmpty
     private String path;
+
+    private List<Upload> uploads;
 
     @NotEmpty
     @Size(max = 50)

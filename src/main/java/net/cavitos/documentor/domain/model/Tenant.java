@@ -1,9 +1,8 @@
-package net.cavitos.documentor.domain;
+package net.cavitos.documentor.domain.model;
 
 import java.time.Instant;
 
 import javax.validation.constraints.Email;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 

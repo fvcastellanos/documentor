@@ -1,7 +1,8 @@
 package net.cavitos.documentor.repository;
 
-import net.cavitos.documentor.domain.Upload;
 import org.springframework.data.repository.CrudRepository;
+
+import net.cavitos.documentor.domain.model.Upload;
 
 import java.util.List;
 
