@@ -17,9 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.vavr.control.Try;
+import net.cavitos.documentor.domain.exception.BusinessException;
 import net.cavitos.documentor.domain.model.ImageDocument;
-import net.cavitos.documentor.domain.response.ErrorResponse;
 import net.cavitos.documentor.service.UploadService;
 
 @RestController
@@ -44,9 +43,6 @@ public class UploadDocumentController {
             return new ResponseEntity<ImageDocument>(result.get(), HttpStatus.CREATED);
         }
 
-        var error = new ErrorResponse();
-        error.setMessage(result.getLeft());
-
-        return new ResponseEntity<ErrorResponse>(error, HttpStatus.UNPROCESSABLE_ENTITY);
+        throw new BusinessException(HttpStatus.UNPROCESSABLE_ENTITY, "Unable to upload document");
     }
 }

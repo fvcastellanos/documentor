@@ -35,7 +35,6 @@ public class ImageDocument {
 
     private List<String> tags;
 
-    @NotEmpty
     private String path;
 
     private List<Upload> uploads;
