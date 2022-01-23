@@ -16,6 +16,7 @@
 
 	<properties>
 		<aws-java-sdk-s3.version>1.12.144</aws-java-sdk-s3.version>
+		<guava.version>31.0.1-jre</guava.version>
 		<hibernate.bean-validator.version>6.2.1.Final</hibernate.bean-validator.version>
 		<java.version>11</java.version>
 		<lombok.version>1.18.22</lombok.version>
@@ -79,6 +80,12 @@
 			<artifactId>vavr</artifactId>
 			<version>${vavr.version}</version>
 		</dependency>		
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

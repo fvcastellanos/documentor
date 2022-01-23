@@ -1,7 +1,12 @@
 package net.cavitos.documentor.web.controller.advice;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +17,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import net.cavitos.documentor.domain.exception.BusinessException;
 import net.cavitos.documentor.domain.response.ErrorResponse;
+import net.cavitos.documentor.domain.response.FieldError;
+import net.cavitos.documentor.domain.response.ValidationErrorResponse;
 
 @ControllerAdvice
 public class RestApiExceptionHandler extends ResponseEntityExceptionHandler {
@@ -36,8 +43,16 @@ public class RestApiExceptionHandler extends ResponseEntityExceptionHandler {
         var error = buildErrorResponse(exception.getMessage());
         
         return handleExceptionInternal(exception, error, buildHttpHeaders(), 
-            exception.getHttpStatus(), request);
-        
+            exception.getHttpStatus(), request);        
+    }
+
+    @ExceptionHandler(RepositoryConstraintViolationException.class)
+    public ResponseEntity<Object> handleValidationException(RepositoryConstraintViolationException exception, WebRequest request) {
+
+        LOGGER.error("unable to process request because a validation exception - ", exception);
+
+        return handleExceptionInternal(exception, buildValidationErrorResponse(exception), buildHttpHeaders(), 
+            HttpStatus.BAD_REQUEST, request);
     }
 
     // ------------------------------------------------------------------------------------------------
@@ -46,6 +61,31 @@ public class RestApiExceptionHandler extends ResponseEntityExceptionHandler {
 
         var error = new ErrorResponse();
         error.setMessage(message);
+
+        return error;
+    }
+
+    private ValidationErrorResponse buildValidationErrorResponse(RepositoryConstraintViolationException exception) {
+
+        final List<FieldError> errors = Lists.newArrayList();
+
+        final var error = new ValidationErrorResponse();
+        error.setMessage(exception.getMessage());
+        error.setErrors(errors);
+
+        if (exception.getErrors().hasFieldErrors()) {
+
+            exception.getErrors().getFieldErrors()
+                .forEach(fieldError -> {
+
+                    final var fError = new FieldError();
+                    fError.setFieldName(fieldError.getField());
+                    fError.setValue(fieldError.getRejectedValue().toString());
+                    fError.setError(fieldError.getCode());
+
+                    errors.add(fError);
+                });
+        }
 
         return error;
     }
