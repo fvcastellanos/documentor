@@ -32,6 +32,9 @@ public class StorageConfiguration {
     @Value("${net.cavitos.documentor.storage.bucket:object-cavitos}")
     private String bucket;
 
+    @Value("${net.cavitos.documentor.storage.subdomain.base.url:https://cdn.cavitos.net}")
+    private String subdomainBaseUrl;
+
     @Bean
     public AmazonS3 spacesClient() {
 
@@ -47,6 +50,6 @@ public class StorageConfiguration {
     @Bean
     public ObjectStorageClient objectStorageClient(AmazonS3 spacesClient) {
 
-        return new ObjectStorageS3Client(spacesClient, baseDirectory, bucket);
+        return new ObjectStorageS3Client(spacesClient, baseDirectory, bucket, subdomainBaseUrl);
     }
 }

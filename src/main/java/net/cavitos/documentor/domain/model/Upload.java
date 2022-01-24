@@ -1,16 +1,17 @@
 package net.cavitos.documentor.domain.model;
 
+import java.time.Instant;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
-import java.time.Instant;
 
 @Getter
 @Setter
@@ -19,7 +20,7 @@ import java.time.Instant;
 // @Document(collection = "uploads")
 public class Upload {
 
-    @Id
+    // @Id
     private String id;
 
     @NotEmpty
@@ -27,7 +28,10 @@ public class Upload {
     private String tenantId;
 
     @NotEmpty
-    private String file;
+    private String fileName;
+
+    @NotEmpty
+    private String url;
 
     @NotEmpty
     @Size(max = 150)

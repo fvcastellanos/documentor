@@ -1,7 +1,10 @@
 package net.cavitos.documentor.service;
 
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
+
+import com.google.common.collect.Lists;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,8 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.vavr.control.Either;
-import io.vavr.control.Try;
+import net.cavitos.documentor.builder.BusinessExceptionBuilder;
 import net.cavitos.documentor.client.ObjectStorageClient;
+import net.cavitos.documentor.client.domain.StoredDocument;
 import net.cavitos.documentor.domain.model.ImageDocument;
 import net.cavitos.documentor.domain.model.Upload;
 import net.cavitos.documentor.repository.DocumentRepository;
@@ -32,68 +36,64 @@ public class UploadService {
         this.documentRepository = documentRepository;
     }
 
-    public Either<String, ImageDocument> storeDocument(final String tenantId, 
+    public ImageDocument storeDocument(final String tenantId, 
                               final String documentId,
                               final List<MultipartFile> files) {
 
-        try {
+        final var imageDocumentHolder = documentRepository.findById(documentId);
 
-            var imageDocumentHolder = documentRepository.findById(documentId);
+        if (imageDocumentHolder.isEmpty()) {
 
-            if (imageDocumentHolder.isEmpty()) {
-
-                var message = "No document: %s was found for tenant: %s";
-                return Either.left(String.format(message, documentId, tenantId));
-            }
-
-            var uploads = new ArrayList<Upload>();
-
-            for (final MultipartFile multipartFile : files) {
-                
-                final var documentHolder = objectStorageClient.storeDocument(multipartFile, tenantId);
-    
-                if (documentHolder.isPresent()) {
-    
-                    final var fileName = documentHolder.get();
-    
-                    final var upload = buildUpload(tenantId, fileName, multipartFile.getName(), true);
-                    uploads.add(upload);
-
-                    LOGGER.info("store document file: {} for tenantId: {}", multipartFile, tenantId);
-
-                    break;
-                }
-
-                final var upload = buildUpload(tenantId, "", multipartFile.getName(), false);
-                uploads.add(upload);
-                LOGGER.warn("unable to store document file: {} for tenantId: {}", multipartFile, tenantId);
-            }
-
-            LOGGER.info("document: {} was stored for tenant: {}", documentId, tenantId);
-            var storedDocument = documentRepository.save(imageDocumentHolder.get());
-
-            return Either.right(storedDocument);
-
-        } catch (Exception exception) {
-
-            LOGGER.error("unable to store document: {} for tenant: {} - ", documentId, tenantId, exception);
-            var message = "Unable to store document: %s for tenant: %s";
-            return Either.left(String.format(message, documentId, tenantId));
+            throw BusinessExceptionBuilder.notFoundException("Document: %s was not found for tenant: %s", documentId, tenantId);
         }
+
+        final var uploads = imageDocumentHolder.map(ImageDocument::getUploads)
+            .orElse(Lists.newArrayList());
+
+        for (final MultipartFile multipartFile : files) {
+
+            final var storedDocumentHolder = objectStorageClient.storeDocument(multipartFile, tenantId);
+
+            if (storedDocumentHolder.isPresent()) {
+    
+                var storedDocument = storedDocumentHolder.get();
+
+                final var upload = buildUpload(tenantId, storedDocument, multipartFile.getOriginalFilename(), true);
+                uploads.add(upload);
+
+                LOGGER.info("store document file: {} for tenantId: {}", multipartFile, tenantId);
+
+                break;
+            }
+        }
+
+        LOGGER.info("document: {} was stored for tenant: {}", documentId, tenantId);
+        
+        var imageDocument = imageDocumentHolder.get();
+        imageDocument.setUploads(uploads);
+        documentRepository.save(imageDocument);
+
+        LOGGER.info("document: {} was updated for tenant: {} for files: ", documentId, tenantId, files);
+        
+        return imageDocument;
     }
 
     // ------------------------------------------------------------------------------------------
 
     private Upload buildUpload(final String tenantId, 
-                               final String fileName, 
+                               final StoredDocument storedDocument,
                                final String uploadName,
                                final boolean stored) {
 
         var upload = new Upload();
+
+        upload.setId(UUID.randomUUID().toString());
         upload.setStored(stored);
         upload.setTenantId(tenantId);
-        upload.setFile(fileName);
+        upload.setFileName(storedDocument.getFileName());
+        upload.setUrl(storedDocument.getUrl());
         upload.setUploadName(uploadName);
+        upload.setCreated(Instant.now());
 
         return upload;
     }

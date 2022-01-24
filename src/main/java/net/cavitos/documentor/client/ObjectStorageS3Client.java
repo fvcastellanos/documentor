@@ -10,42 +10,54 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.cavitos.documentor.client.domain.StoredDocument;
+
 public class ObjectStorageS3Client implements ObjectStorageClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ObjectStorageS3Client.class);
 
     private final String baseDirectory;
     private final String bucket;
+    private final String subdomainBaseUrl;
 
     private final AmazonS3 amazonS3;
 
-    public ObjectStorageS3Client(AmazonS3 amazonS3, String baseDirectory, String bucket) {
+    public ObjectStorageS3Client(final AmazonS3 amazonS3, 
+                                 final String baseDirectory, 
+                                 final String bucket,
+                                 final String subdomainBaseUrl) {
 
         this.baseDirectory = baseDirectory;
         this.bucket = bucket;
         this.amazonS3 = amazonS3;
+        this.subdomainBaseUrl = subdomainBaseUrl;
     }
 
     @Override
-    public Optional<String> storeDocument(MultipartFile multipartFile, String tenantId) {
+    public Optional<StoredDocument> storeDocument(MultipartFile multipartFile, String tenantId) {
 
         try {
 
             LOGGER.info("upload file: {} for tenantId: {}", multipartFile.getOriginalFilename(), tenantId);
 
-            var key = buildFileNane(tenantId, multipartFile);
+            var key = buildFileUrl(tenantId, multipartFile);
             var objectMetadata = buildObjectMetadata(multipartFile);
+
+            var storedDocument = StoredDocument.builder()
+                .fileName(key)
+                .Url(subdomainBaseUrl + "/" + key)
+                .build();
 
             amazonS3.putObject(bucket, key, multipartFile.getInputStream(), objectMetadata);
 
             LOGGER.info("file: {} uploaded for tenantId: {}", key, tenantId);
 
-            return Optional.of(key);
+            return Optional.of(storedDocument);
         } catch (Exception ex) {
-            LOGGER.error("can't upload file: {} for tenantId: {} - ", multipartFile.getOriginalFilename(), tenantId, ex);
-        }
 
-        return Optional.empty();
+            LOGGER.error("can't upload file: {} for tenantId: {} - ", multipartFile.getOriginalFilename(), tenantId, ex);
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -63,7 +75,7 @@ public class ObjectStorageS3Client implements ObjectStorageClient {
 
     // ------------------------------------------------------------------------------------------------------------------------
 
-    private String buildFileNane(String tenantId, MultipartFile multipartFile) {
+    private String buildFileUrl(String tenantId, MultipartFile multipartFile) {
 
         var stringBuilder = new StringBuilder();
         stringBuilder.append(baseDirectory)
