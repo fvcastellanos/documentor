@@ -6,7 +6,6 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,10 +16,8 @@ import lombok.ToString;
 @Setter
 @ToString
 @EqualsAndHashCode
-// @Document(collection = "uploads")
 public class Upload {
 
-    // @Id
     private String id;
 
     @NotEmpty
