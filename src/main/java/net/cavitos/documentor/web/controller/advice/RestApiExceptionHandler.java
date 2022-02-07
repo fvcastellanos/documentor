@@ -16,6 +16,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import net.cavitos.documentor.domain.exception.BusinessException;
+import net.cavitos.documentor.domain.exception.ValidationException;
 import net.cavitos.documentor.domain.response.ErrorResponse;
 import net.cavitos.documentor.domain.response.FieldError;
 import net.cavitos.documentor.domain.response.ValidationErrorResponse;
@@ -44,6 +45,14 @@ public class RestApiExceptionHandler extends ResponseEntityExceptionHandler {
         
         return handleExceptionInternal(exception, error, buildHttpHeaders(), 
             exception.getHttpStatus(), request);        
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Object> handleRequestValidationException(ValidationException exception, WebRequest request) {
+
+        LOGGER.error("unable to process request because a validation exception - ", exception);
+
+        return handleExceptionInternal(exception, exception.getFieldErrors(), buildHttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(RepositoryConstraintViolationException.class)

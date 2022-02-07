@@ -18,7 +18,7 @@
 		<aws-java-sdk-s3.version>1.12.144</aws-java-sdk-s3.version>
 		<guava.version>31.0.1-jre</guava.version>
 		<hibernate.bean-validator.version>6.2.1.Final</hibernate.bean-validator.version>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 		<lombok.version>1.18.22</lombok.version>
 		<vavr.version>0.10.4</vavr.version>
 	</properties>
