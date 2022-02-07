@@ -10,6 +10,7 @@ import org.springframework.data.rest.core.RepositoryConstraintViolationException
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -17,9 +18,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import net.cavitos.documentor.domain.exception.BusinessException;
 import net.cavitos.documentor.domain.exception.ValidationException;
-import net.cavitos.documentor.domain.response.ErrorResponse;
-import net.cavitos.documentor.domain.response.FieldError;
-import net.cavitos.documentor.domain.response.ValidationErrorResponse;
+import net.cavitos.documentor.domain.response.error.ErrorResponse;
+import net.cavitos.documentor.domain.response.error.FieldError;
+import net.cavitos.documentor.domain.response.error.ValidationErrorResponse;
 
 @ControllerAdvice
 public class RestApiExceptionHandler extends ResponseEntityExceptionHandler {
@@ -52,17 +53,18 @@ public class RestApiExceptionHandler extends ResponseEntityExceptionHandler {
 
         LOGGER.error("unable to process request because a validation exception - ", exception);
 
-        return handleExceptionInternal(exception, exception.getFieldErrors(), buildHttpHeaders(), HttpStatus.BAD_REQUEST, request);
+        var error = buildValidationErrorResponse(exception.getFieldErrors());
+        return handleExceptionInternal(exception, error, buildHttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
-    @ExceptionHandler(RepositoryConstraintViolationException.class)
-    public ResponseEntity<Object> handleValidationException(RepositoryConstraintViolationException exception, WebRequest request) {
+    // @ExceptionHandler(RepositoryConstraintViolationException.class)
+    // public ResponseEntity<Object> handleValidationException(RepositoryConstraintViolationException exception, WebRequest request) {
 
-        LOGGER.error("unable to process request because a validation exception - ", exception);
+    //     LOGGER.error("unable to process request because a validation exception - ", exception);
 
-        return handleExceptionInternal(exception, buildValidationErrorResponse(exception), buildHttpHeaders(), 
-            HttpStatus.BAD_REQUEST, request);
-    }
+    //     return handleExceptionInternal(exception, buildValidationErrorResponse(exception), buildHttpHeaders(), 
+    //         HttpStatus.BAD_REQUEST, request);
+    // }
 
     // ------------------------------------------------------------------------------------------------
 
@@ -70,6 +72,15 @@ public class RestApiExceptionHandler extends ResponseEntityExceptionHandler {
 
         var error = new ErrorResponse();
         error.setMessage(message);
+
+        return error;
+    }
+
+    private ValidationErrorResponse buildValidationErrorResponse(List<FieldError> errors) {
+
+        final var error = new ValidationErrorResponse();
+        error.setErrors(errors);
+        error.setMessage("Request validation has failed");
 
         return error;
     }

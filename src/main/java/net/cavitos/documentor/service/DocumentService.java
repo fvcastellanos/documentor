@@ -66,5 +66,12 @@ public class DocumentService {
 
         return documentRepository.findByTenantIdAndText(tenantId, text, pageable);                                            
     }
+
+    public ImageDocument addDocument(final ImageDocument imageDocument) {
+
+        LOGGER.info("Add new document with name: {} for tenantId: {}", imageDocument.getName(), imageDocument.getTenantId());
+
+        return documentRepository.save(imageDocument);
+    }
     
 }

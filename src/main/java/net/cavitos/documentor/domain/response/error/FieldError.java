@@ -1,4 +1,4 @@
-package net.cavitos.documentor.domain.response;
+package net.cavitos.documentor.domain.response.error;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

@@ -45,7 +45,7 @@ public class DocumentValidator implements Validator {
 
         if (tenantHolder.isEmpty()) {
 
-            errors.rejectValue("tenantId", "tenantId.not.found");
+            errors.rejectValue("tenantId", "tenantId.not.found", "poiuyt");
         }
     }
 }

@@ -1,6 +1,4 @@
-package net.cavitos.documentor.domain.response;
-
-import java.util.List;
+package net.cavitos.documentor.domain.response.error;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -11,8 +9,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @EqualsAndHashCode
-public class ValidationErrorResponse {
+public class ErrorResponse {
     
     private String message;
-    private List<FieldError> errors;
 }

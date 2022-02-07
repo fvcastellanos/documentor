@@ -3,11 +3,9 @@ package net.cavitos.documentor.domain.exception;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
-
 import org.springframework.validation.Errors;
 
-import net.cavitos.documentor.domain.response.FieldError;
+import net.cavitos.documentor.domain.response.error.FieldError;
 
 public class ValidationException extends RuntimeException {
 
@@ -31,7 +29,7 @@ public class ValidationException extends RuntimeException {
             .map(error -> {
 
                 final var fieldError = new FieldError();
-                fieldError.setError(error.getCode());
+                fieldError.setError(error.getDefaultMessage());
                 fieldError.setFieldName(error.getField());
                 fieldError.setValue(error.getRejectedValue().toString());
 
