@@ -23,5 +23,9 @@ public class NewDocumentRequest {
     @Size(max = 300)
     private String description;
 
+    @NotEmpty
+    @Size(max = 50)
+    private String tenantId;
+
     private List<String> tags;
 }

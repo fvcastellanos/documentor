@@ -14,9 +14,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import net.cavitos.documentor.domain.exception.BusinessException;
 import net.cavitos.documentor.domain.exception.ValidationException;
-import net.cavitos.documentor.domain.response.error.ErrorResponse;
-import net.cavitos.documentor.domain.response.error.FieldError;
-import net.cavitos.documentor.domain.response.error.ValidationErrorResponse;
+import net.cavitos.documentor.web.model.response.error.ErrorResponse;
+import net.cavitos.documentor.web.model.response.error.FieldError;
+import net.cavitos.documentor.web.model.response.error.ValidationErrorResponse;
 
 @ControllerAdvice
 public class RestApiExceptionHandler extends ResponseEntityExceptionHandler {

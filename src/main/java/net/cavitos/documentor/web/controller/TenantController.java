@@ -16,15 +16,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.cavitos.documentor.domain.exception.ValidationException;
 import net.cavitos.documentor.domain.model.Tenant;
-import net.cavitos.documentor.domain.response.NewResourceResponse;
 import net.cavitos.documentor.service.TenantService;
 import net.cavitos.documentor.web.model.request.NewTenantRequest;
 import net.cavitos.documentor.web.model.request.UpdateTenantRequest;
+import net.cavitos.documentor.web.model.response.ResourceResponse;
 import net.cavitos.documentor.web.validator.tenant.NewTenantRequestValidator;
 import net.cavitos.documentor.web.validator.tenant.UpdateTenantRequestValidator;
 
+import static net.cavitos.documentor.web.controller.ControllerRoute.TENANTS_ROUTE;
+
 @RestController
-@RequestMapping("/tenants")
+@RequestMapping(ControllerRoute.TENANTS_ROUTE)
 public class TenantController extends BaseController {
     
     @Autowired
@@ -45,16 +47,16 @@ public class TenantController extends BaseController {
     }
 
     @GetMapping("/{tenantId}")
-    public ResponseEntity<NewResourceResponse<Tenant>> getTenantById(@PathVariable final String tenantId) {
+    public ResponseEntity<ResourceResponse<Tenant>> getTenantById(@PathVariable final String tenantId) {
 
         var tenant = tenantService.getTenantById(tenantId);
 
-        var response = new NewResourceResponse<>(tenant, buildSelf(tenant.getTenantId()));
+        var response = new ResourceResponse<>(tenant, buildSelf(tenant.getTenantId()));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<NewResourceResponse<Tenant>> newTenant(@RequestBody final NewTenantRequest newTenantRequest) {
+    public ResponseEntity<ResourceResponse<Tenant>> newTenant(@RequestBody final NewTenantRequest newTenantRequest) {
 
         var errors = buildErrorObject(newTenantRequest);
         newTenantRequestValidator.validate(newTenantRequest, errors);
@@ -66,12 +68,12 @@ public class TenantController extends BaseController {
 
         var storedTenant = tenantService.newTenant(newTenantRequest);
 
-        var response = new NewResourceResponse<>(storedTenant, buildSelf(storedTenant.getTenantId()));
+        var response = new ResourceResponse<>(storedTenant, buildSelf(storedTenant.getTenantId()));
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/{tenantId}")
-    public ResponseEntity<NewResourceResponse<Tenant>> updateTenant(@PathVariable final String tenantId,     
+    public ResponseEntity<ResourceResponse<Tenant>> updateTenant(@PathVariable final String tenantId,     
                                                                     @RequestBody final UpdateTenantRequest tenant) {
 
         var errors = buildErrorObject(tenant);
@@ -84,7 +86,7 @@ public class TenantController extends BaseController {
 
         var updatedTenant = tenantService.updateTenant(tenantId, tenant);
 
-        var response = new NewResourceResponse<>(updatedTenant, buildSelf(updatedTenant.getTenantId()));
+        var response = new ResourceResponse<>(updatedTenant, buildSelf(updatedTenant.getTenantId()));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -97,12 +99,12 @@ public class TenantController extends BaseController {
 
     // ---------------------------------------------------------------------------------------------------------
 
-    private String buildSelf(String id) {
+    private String buildSelf(String self) {
 
         return new StringBuilder()
-            .append("/tenants")
+            .append(TENANTS_ROUTE)
             .append("/")
-            .append(id)
+            .append(self)
             .toString();
     }
 }

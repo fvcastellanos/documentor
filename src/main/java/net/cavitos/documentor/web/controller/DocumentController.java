@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,12 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.cavitos.documentor.domain.exception.ValidationException;
 import net.cavitos.documentor.domain.model.ImageDocument;
-import net.cavitos.documentor.domain.response.NewResourceResponse;
 import net.cavitos.documentor.service.DocumentService;
+import net.cavitos.documentor.web.model.response.ResourceResponse;
 import net.cavitos.documentor.web.validator.document.DocumentValidator;
 
+import static net.cavitos.documentor.web.controller.ControllerRoute.DOCUMENTS_ROUTE;
+
 @RestController
-@RequestMapping("/documents")
+@RequestMapping(DOCUMENTS_ROUTE)
 public class DocumentController extends BaseController {
     
     @Autowired
@@ -39,7 +40,7 @@ public class DocumentController extends BaseController {
     }
 
     @PostMapping("/{tenantId}")
-    public ResponseEntity<NewResourceResponse<ImageDocument>> addDocument(@PathVariable("tenantId") String tenantId,
+    public ResponseEntity<ResourceResponse<ImageDocument>> addDocument(@PathVariable("tenantId") String tenantId,
                                                                           @RequestBody ImageDocument imageDocument) {
 
         imageDocument.setTenantId(tenantId);
@@ -53,8 +54,21 @@ public class DocumentController extends BaseController {
         }
 
         var storedDocument = documentService.addDocument(imageDocument);
-        var response = new NewResourceResponse<>(storedDocument, "/documents/" + tenantId + "/" + storedDocument.getId());
+        var response = new ResourceResponse<>(storedDocument, buildSelf(tenantId, imageDocument.getId()));
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------
+
+    private String buildSelf(final String tenantId, final String self) {
+
+        return new StringBuilder()
+            .append(DOCUMENTS_ROUTE)
+            .append("/")
+            .append(tenantId)
+            .append("/")
+            .append(self)
+            .toString();
     }
 }

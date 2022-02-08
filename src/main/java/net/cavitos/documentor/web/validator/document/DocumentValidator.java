@@ -7,8 +7,8 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-import net.cavitos.documentor.domain.model.ImageDocument;
 import net.cavitos.documentor.repository.TenantRepository;
+import net.cavitos.documentor.web.model.request.NewDocumentRequest;
 
 @Component
 public class DocumentValidator implements Validator {
@@ -25,7 +25,7 @@ public class DocumentValidator implements Validator {
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return ImageDocument.class.equals(clazz);
+        return NewDocumentRequest.class.equals(clazz);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class DocumentValidator implements Validator {
 
         if (!errors.hasFieldErrors()) {
 
-            var document = (ImageDocument) target;
+            var document = (NewDocumentRequest) target;
             validateTenantId(document.getTenantId(), errors);
         }
     } 

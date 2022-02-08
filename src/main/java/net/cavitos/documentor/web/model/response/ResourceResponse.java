@@ -1,4 +1,4 @@
-package net.cavitos.documentor.domain.response;
+package net.cavitos.documentor.web.model.response;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -9,12 +9,12 @@ import lombok.ToString;
 @Setter
 @ToString
 @EqualsAndHashCode
-public class NewResourceResponse<T> {
+public class ResourceResponse<T> {
     
     private T content;
     private LinkResponse links;
 
-    public NewResourceResponse(T object, String self) {
+    public ResourceResponse(T object, String self) {
 
         final var links = new LinkResponse();
         links.setSelf(self);

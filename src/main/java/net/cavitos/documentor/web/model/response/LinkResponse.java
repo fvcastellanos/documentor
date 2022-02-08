@@ -1,4 +1,4 @@
-package net.cavitos.documentor.domain.response;
+package net.cavitos.documentor.web.model.response;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -9,8 +9,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @EqualsAndHashCode
-public class UploadResponse {
-
-    private String fileName;
-    private String path;    
+public class LinkResponse {
+    
+    private String self;
 }
