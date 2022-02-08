@@ -17,7 +17,7 @@ import net.cavitos.documentor.domain.exception.ValidationException;
 import net.cavitos.documentor.domain.model.ImageDocument;
 import net.cavitos.documentor.domain.response.NewResourceResponse;
 import net.cavitos.documentor.service.DocumentService;
-import net.cavitos.documentor.web.validator.DocumentValidator;
+import net.cavitos.documentor.web.validator.document.DocumentValidator;
 
 @RestController
 @RequestMapping("/documents")

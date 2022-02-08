@@ -2,15 +2,11 @@ package net.cavitos.documentor.web.controller.advice;
 
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -57,15 +53,6 @@ public class RestApiExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(exception, error, buildHttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
-    // @ExceptionHandler(RepositoryConstraintViolationException.class)
-    // public ResponseEntity<Object> handleValidationException(RepositoryConstraintViolationException exception, WebRequest request) {
-
-    //     LOGGER.error("unable to process request because a validation exception - ", exception);
-
-    //     return handleExceptionInternal(exception, buildValidationErrorResponse(exception), buildHttpHeaders(), 
-    //         HttpStatus.BAD_REQUEST, request);
-    // }
-
     // ------------------------------------------------------------------------------------------------
 
     private ErrorResponse buildErrorResponse(String message) {
@@ -80,32 +67,7 @@ public class RestApiExceptionHandler extends ResponseEntityExceptionHandler {
 
         final var error = new ValidationErrorResponse();
         error.setErrors(errors);
-        error.setMessage("Request validation has failed");
-
-        return error;
-    }
-
-    private ValidationErrorResponse buildValidationErrorResponse(RepositoryConstraintViolationException exception) {
-
-        final List<FieldError> errors = Lists.newArrayList();
-
-        final var error = new ValidationErrorResponse();
-        error.setMessage(exception.getMessage());
-        error.setErrors(errors);
-
-        if (exception.getErrors().hasFieldErrors()) {
-
-            exception.getErrors().getFieldErrors()
-                .forEach(fieldError -> {
-
-                    final var fError = new FieldError();
-                    fError.setFieldName(fieldError.getField());
-                    fError.setValue(fieldError.getRejectedValue().toString());
-                    fError.setError(fieldError.getCode());
-
-                    errors.add(fError);
-                });
-        }
+        error.setMessage("Request validation failed");
 
         return error;
     }

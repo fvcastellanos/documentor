@@ -1,6 +1,7 @@
 package net.cavitos.documentor.domain.exception;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.validation.Errors;
@@ -31,7 +32,11 @@ public class ValidationException extends RuntimeException {
                 final var fieldError = new FieldError();
                 fieldError.setError(error.getDefaultMessage());
                 fieldError.setFieldName(error.getField());
-                fieldError.setValue(error.getRejectedValue().toString());
+
+                final var value = Objects.nonNull(error.getRejectedValue()) ? error.getRejectedValue().toString() 
+                    : "null value";
+
+                fieldError.setValue(value);
 
                 return fieldError;
             }).collect(Collectors.toList());

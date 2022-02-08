@@ -1,5 +1,7 @@
-package net.cavitos.documentor.web.validator;
+package net.cavitos.documentor.web.validator.document;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -8,11 +10,13 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import net.cavitos.documentor.domain.model.ImageDocument;
 import net.cavitos.documentor.repository.TenantRepository;
 
+@Component
 public class DocumentValidator implements Validator {
 
     final private LocalValidatorFactoryBean validator;
     final private TenantRepository tenantRepository;
 
+    @Autowired
     public DocumentValidator(LocalValidatorFactoryBean validator, TenantRepository tenantRepository) {
 
         this.validator = validator;
@@ -45,7 +49,7 @@ public class DocumentValidator implements Validator {
 
         if (tenantHolder.isEmpty()) {
 
-            errors.rejectValue("tenantId", "tenantId.not.found", "poiuyt");
+            errors.rejectValue("tenantId", "tenantId.not.found", "tenantId not found");
         }
     }
 }

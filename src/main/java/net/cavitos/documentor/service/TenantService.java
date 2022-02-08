@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import net.cavitos.documentor.builder.BusinessExceptionBuilder;
 import net.cavitos.documentor.domain.model.Tenant;
 import net.cavitos.documentor.repository.TenantRepository;
+import net.cavitos.documentor.transformer.TenantTransformer;
+import net.cavitos.documentor.web.model.request.NewTenantRequest;
+import net.cavitos.documentor.web.model.request.UpdateTenantRequest;
 
 @Service
 public class TenantService {
@@ -24,10 +27,22 @@ public class TenantService {
         return tenantRepository.findAll(pageable);
     }
 
-    public Tenant newTenant(final Tenant tenant) {
+    public Tenant getTenantById(final String tenantId) {
 
-        final var tenantId = tenant.getTenantId();
-        final var email = tenant.getEmail();
+        var tenantHolder = tenantRepository.findByTenantId(tenantId);
+
+        if(tenantHolder.isEmpty()) {
+
+            throw BusinessExceptionBuilder.notFoundException("Tenant: %s not found", tenantId);
+        }
+
+        return tenantHolder.get();
+    }
+
+    public Tenant newTenant(final NewTenantRequest tenantRequest) {
+
+        final var tenantId = tenantRequest.getTenantId();
+        final var email = tenantRequest.getEmail();
         
         var tenantHolder = tenantRepository.findByTenantId(tenantId);
         
@@ -43,12 +58,11 @@ public class TenantService {
             throw BusinessExceptionBuilder.unprocessableException("Email: %s already exists", email);
         }
 
-        return tenantRepository.save(tenant);
+        return tenantRepository.save(TenantTransformer.toModel(tenantRequest));
     }
 
-    public Tenant updateTenant(final Tenant tenant) {
+    public Tenant updateTenant(final String tenantId, final UpdateTenantRequest updateTenantRequest) {
 
-        final var tenantId = tenant.getTenantId();
         var tenantHolder = tenantRepository.findByTenantId(tenantId);
         
         if(tenantHolder.isEmpty()) {
@@ -59,8 +73,18 @@ public class TenantService {
         var storedTenant = tenantHolder.get();
 
         // Evaluate the logic to update email
-        storedTenant.setName(tenant.getName());
+        storedTenant.setName(updateTenantRequest.getName());
 
         return tenantRepository.save(storedTenant);
+    }
+
+    public void deleteTenant(final String tenantId) {
+
+        var tenantHolder = tenantRepository.findByTenantId(tenantId);
+
+        tenantHolder.ifPresent(tenant -> {
+
+            tenantRepository.delete(tenant);
+        });
     }
 }

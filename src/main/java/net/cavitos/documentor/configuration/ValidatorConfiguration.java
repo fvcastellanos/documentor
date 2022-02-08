@@ -1,8 +1,10 @@
 package net.cavitos.documentor.configuration;
 
 import net.cavitos.documentor.repository.TenantRepository;
-import net.cavitos.documentor.web.validator.DocumentValidator;
-import net.cavitos.documentor.web.validator.TenantValidator;
+import net.cavitos.documentor.web.validator.document.DocumentValidator;
+import net.cavitos.documentor.web.validator.tenant.NewTenantRequestValidator;
+import net.cavitos.documentor.web.validator.tenant.UpdateTenantRequestValidator;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
@@ -14,18 +16,5 @@ public class ValidatorConfiguration {
     public LocalValidatorFactoryBean localValidatorFactoryBean() {
 
         return new LocalValidatorFactoryBean();
-    }
-
-    @Bean
-    public DocumentValidator beforeCreateDocumentValidator(LocalValidatorFactoryBean localValidatorFactoryBean, 
-                                                           TenantRepository tenantRepository) {
-
-        return new DocumentValidator(localValidatorFactoryBean, tenantRepository);
-    }
-
-    @Bean
-    public TenantValidator beforeCreateTenantValidator(LocalValidatorFactoryBean localValidatorFactoryBean) {
-
-        return new TenantValidator(localValidatorFactoryBean);
     }
 }
