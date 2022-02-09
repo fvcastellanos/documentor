@@ -11,6 +11,8 @@ import net.cavitos.documentor.builder.BusinessExceptionBuilder;
 import net.cavitos.documentor.domain.model.ImageDocument;
 import net.cavitos.documentor.repository.DocumentRepository;
 import net.cavitos.documentor.repository.TenantRepository;
+import net.cavitos.documentor.transformer.DocumentTransformer;
+import net.cavitos.documentor.web.model.request.DocumentRequest;
 
 @Service
 public class DocumentService {
@@ -34,19 +36,12 @@ public class DocumentService {
         
         final var pageable = PageRequest.of(page, size);
         
-        final var tenantHolder = tenantRepository.findById(tenantId);
-
-        if (tenantHolder.isEmpty()) {
-
-            var exception = BusinessExceptionBuilder.notFoundException("Tenant: %s was not found", tenantId);
-            LOGGER.error("TenantId: {} wat not found - ", tenantId, exception);
-            throw exception;
-        }
+        verifyTenantIdExists(tenantId);
 
         return documentRepository.findByTenantId(tenantId, pageable);
     }
 
-    public Page<ImageDocument> findDocumentsByTags(final String tenantId, 
+    public Page<ImageDocument> findDocumentsByText(final String tenantId, 
                                                    final String text, 
                                                    final int page, 
                                                    final int size) {
@@ -55,7 +50,45 @@ public class DocumentService {
         
         final var pageable = PageRequest.of(page, size);
 
-        final var tenantHolder = tenantRepository.findById(tenantId);
+        verifyTenantIdExists(tenantId);
+
+        return documentRepository.findByTenantIdAndText(tenantId, text, pageable);                                            
+    }
+
+    public ImageDocument addDocument(final String tenantId, final DocumentRequest documentRequest) {
+        
+        final var name = documentRequest.getName();
+        LOGGER.info("Add new document with name: {} for tenantId: {}", name, tenantId);
+
+        verifyTenantIdExists(tenantId);
+
+        final var documentHolder = documentRepository.findByTenantIdAndName(tenantId, name);
+
+        if (documentHolder.isPresent()) {
+
+            final var exception = BusinessExceptionBuilder.unprocessableException("A document with name: %s already exists for tenantId: %s", 
+                name, tenantId);
+
+            LOGGER.error("A document_name={} already exists for tenantId={} - ", name, tenantId);
+
+            throw exception;
+        }
+
+        return documentRepository.save(DocumentTransformer.toModel(tenantId, documentRequest));
+    }
+
+    public ImageDocument updateDocument(final String tenantId, final DocumentRequest documentRequest) {
+
+        verifyTenantIdExists(tenantId);
+
+        return null;
+    }
+    
+    // -------------------------------------------------------------------------------------
+
+    private void verifyTenantIdExists(final String tenantId) {
+
+        final var tenantHolder = tenantRepository.findByTenantId(tenantId);
 
         if (tenantHolder.isEmpty()) {
 
@@ -63,15 +96,5 @@ public class DocumentService {
             LOGGER.error("TenantId: {} wat not found - ", tenantId, exception);
             throw exception;
         }
-
-        return documentRepository.findByTenantIdAndText(tenantId, text, pageable);                                            
     }
-
-    public ImageDocument addDocument(final ImageDocument imageDocument) {
-
-        LOGGER.info("Add new document with name: {} for tenantId: {}", imageDocument.getName(), imageDocument.getTenantId());
-
-        return documentRepository.save(imageDocument);
-    }
-    
 }

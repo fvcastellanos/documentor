@@ -8,16 +8,16 @@ import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import net.cavitos.documentor.repository.TenantRepository;
-import net.cavitos.documentor.web.model.request.NewDocumentRequest;
+import net.cavitos.documentor.web.model.request.DocumentRequest;
 
 @Component
-public class DocumentValidator implements Validator {
+public class NewDocumentValidator implements Validator {
 
     final private LocalValidatorFactoryBean validator;
     final private TenantRepository tenantRepository;
 
     @Autowired
-    public DocumentValidator(LocalValidatorFactoryBean validator, TenantRepository tenantRepository) {
+    public NewDocumentValidator(LocalValidatorFactoryBean validator, TenantRepository tenantRepository) {
 
         this.validator = validator;
         this.tenantRepository = tenantRepository;
@@ -25,7 +25,7 @@ public class DocumentValidator implements Validator {
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return NewDocumentRequest.class.equals(clazz);
+        return DocumentRequest.class.equals(clazz);
     }
 
     @Override
@@ -38,8 +38,8 @@ public class DocumentValidator implements Validator {
 
         if (!errors.hasFieldErrors()) {
 
-            var document = (NewDocumentRequest) target;
-            validateTenantId(document.getTenantId(), errors);
+            // var document = (NewDocumentRequest) target;
+            // validateTenantId(document.getTenantId(), errors);
         }
     } 
 

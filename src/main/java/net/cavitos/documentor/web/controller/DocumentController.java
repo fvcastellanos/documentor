@@ -15,8 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import net.cavitos.documentor.domain.exception.ValidationException;
 import net.cavitos.documentor.domain.model.ImageDocument;
 import net.cavitos.documentor.service.DocumentService;
+import net.cavitos.documentor.web.model.request.DocumentRequest;
 import net.cavitos.documentor.web.model.response.ResourceResponse;
-import net.cavitos.documentor.web.validator.document.DocumentValidator;
+import net.cavitos.documentor.web.validator.document.NewDocumentValidator;
 
 import static net.cavitos.documentor.web.controller.ControllerRoute.DOCUMENTS_ROUTE;
 
@@ -28,7 +29,7 @@ public class DocumentController extends BaseController {
     private DocumentService documentService;
 
     @Autowired
-    private DocumentValidator documentValidator;
+    private NewDocumentValidator newDocumentValidator;
 
     @GetMapping("/{tenantId}")
     public ResponseEntity<Page<ImageDocument>> getDocumentsByTenant(@PathVariable("tenantId") String tenantId,
@@ -40,23 +41,36 @@ public class DocumentController extends BaseController {
     }
 
     @PostMapping("/{tenantId}")
-    public ResponseEntity<ResourceResponse<ImageDocument>> addDocument(@PathVariable("tenantId") String tenantId,
-                                                                          @RequestBody ImageDocument imageDocument) {
+    public ResponseEntity<ResourceResponse<ImageDocument>> addDocument(@PathVariable("tenantId") final String tenantId,
+                                                                       @RequestBody final DocumentRequest request) {
 
-        imageDocument.setTenantId(tenantId);
-        
-        var errors = buildErrorObject(imageDocument);
-        documentValidator.validate(imageDocument, errors);
+        var errors = buildErrorObject(request);
+        newDocumentValidator.validate(request, errors);
 
         if (errors.hasErrors()) {
 
             throw new ValidationException(errors);
         }
 
-        var storedDocument = documentService.addDocument(imageDocument);
-        var response = new ResourceResponse<>(storedDocument, buildSelf(tenantId, imageDocument.getId()));
+        var storedDocument = documentService.addDocument(tenantId, request);
+        var response = new ResourceResponse<>(storedDocument, buildSelf(tenantId, storedDocument.getId()));
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public ResponseEntity<ResourceResponse<ImageDocument>> updateDocument(@PathVariable final String tenantId,
+                                                                          @RequestBody final DocumentRequest request) {
+        
+        final var errors = buildErrorObject(request);
+        newDocumentValidator.validate(request, errors);
+
+        if (errors.hasErrors()) {
+
+            throw new ValidationException(errors);
+        }
+
+        return null;
+
     }
 
     // ---------------------------------------------------------------------------------------------------------

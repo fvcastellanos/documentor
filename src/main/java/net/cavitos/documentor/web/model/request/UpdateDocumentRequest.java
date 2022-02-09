@@ -14,7 +14,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @EqualsAndHashCode
-public class NewDocumentRequest {
+public class UpdateDocumentRequest {
     
     @NotEmpty
     @Size(max = 150)
@@ -22,10 +22,6 @@ public class NewDocumentRequest {
 
     @Size(max = 300)
     private String description;
-
-    @NotEmpty
-    @Size(max = 50)
-    private String tenantId;
-
+    
     private List<String> tags;
 }
