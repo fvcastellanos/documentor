@@ -1,0 +1,17 @@
+version: '3'
+services:
+  mongo:
+    image: mongo:4.4
+    container_name: mongodb44
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: r00t
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb44-data:/data/db
+    restart: always
+
+volumes:
+  mongodb44-data:
+    external: true

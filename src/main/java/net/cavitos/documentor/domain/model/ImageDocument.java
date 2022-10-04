@@ -1,13 +1,14 @@
-package net.cavitos.documentor.domain;
+package net.cavitos.documentor.domain.model;
 
 import java.time.Instant;
 import java.util.List;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.TextScore;
 
@@ -26,20 +27,22 @@ public class ImageDocument {
     @Id
     private String id;
 
-    @Max(150)
     @NotEmpty
+    @Size(max = 150)
+    @Indexed(name = "idx_documents_name")
     private String name;
 
-    @Max(300)
+    @Size(max = 300)
     private String description;
 
     private List<String> tags;
 
-    @NotEmpty
     private String path;
 
-    @Max(50)
+    private List<Upload> uploads;
+
     @NotEmpty
+    @Size(max = 50)
     private String tenantId;
 
     @CreatedDate

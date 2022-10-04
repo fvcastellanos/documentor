@@ -1,20 +1,104 @@
 package net.cavitos.documentor.client;
 
-import com.amazonaws.regions.Regions;
+import java.util.Optional;
+import java.util.UUID;
+
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
+
+import net.cavitos.documentor.client.domain.StoredDocument;
 
 public class ObjectStorageS3Client implements ObjectStorageClient {
 
-    @Override
-    public String storeDocument(byte[] content) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ObjectStorageS3Client.class);
 
-        final AmazonS3 s3 = AmazonS3ClientBuilder.standard()
-            .withRegion(Regions.DEFAULT_REGION)
-            .build();
+    private final String baseDirectory;
+    private final String bucket;
+    private final String subdomainBaseUrl;
 
-        // TODO Auto-generated method stub
-        return null;
+    private final AmazonS3 amazonS3;
+
+    public ObjectStorageS3Client(final AmazonS3 amazonS3, 
+                                 final String baseDirectory, 
+                                 final String bucket,
+                                 final String subdomainBaseUrl) {
+
+        this.baseDirectory = baseDirectory;
+        this.bucket = bucket;
+        this.amazonS3 = amazonS3;
+        this.subdomainBaseUrl = subdomainBaseUrl;
     }
-    
+
+    @Override
+    public Optional<StoredDocument> storeDocument(MultipartFile multipartFile, String tenantId) {
+
+        try {
+
+            LOGGER.info("upload file: {} for tenantId: {}", multipartFile.getOriginalFilename(), tenantId);
+
+            var key = buildFileUrl(tenantId, multipartFile);
+            var objectMetadata = buildObjectMetadata(multipartFile);
+
+            var storedDocument = StoredDocument.builder()
+                .fileName(key)
+                .Url(subdomainBaseUrl + "/" + key)
+                .build();
+
+            amazonS3.putObject(bucket, key, multipartFile.getInputStream(), objectMetadata);
+
+            LOGGER.info("file: {} uploaded for tenantId: {}", key, tenantId);
+
+            return Optional.of(storedDocument);
+        } catch (Exception ex) {
+
+            LOGGER.error("can't upload file: {} for tenantId: {} - ", multipartFile.getOriginalFilename(), tenantId, ex);
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public void removeDocument(String fileName) {
+
+        try {
+
+            var key = baseDirectory + "/" + fileName;
+
+            amazonS3.deleteObject(bucket, key);
+        } catch (Exception ex) {
+            LOGGER.error("can't remove file: {} - ", fileName, ex);
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------------------------------------
+
+    private String buildFileUrl(String tenantId, MultipartFile multipartFile) {
+
+        var stringBuilder = new StringBuilder();
+        stringBuilder.append(baseDirectory)
+            .append("/")
+            .append(tenantId)
+            .append("/")
+            .append(UUID.randomUUID().toString())
+            .append(buildFileExtension(multipartFile.getOriginalFilename()));
+
+        return stringBuilder.toString();
+    }
+
+    private String buildFileExtension(String fileName) {
+
+        return fileName.substring(fileName.lastIndexOf("."));
+    }
+
+    private ObjectMetadata buildObjectMetadata(MultipartFile multipartFile) {
+
+        var objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(multipartFile.getSize());
+        objectMetadata.setContentType(multipartFile.getContentType());
+
+        return objectMetadata;
+    }    
 }

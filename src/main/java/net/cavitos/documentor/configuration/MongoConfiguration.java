@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @EnableMongoRepositories(basePackages = "net.cavitos.documentor.repository")
 public class MongoConfiguration {
     
-    @Value("${documentor.connection:mongodb://root:r00t@cloud.cavitos.net:27017}")
+    @Value("${documentor.database.connection}")
     private String connectionString;
 
     @Value("${documentor.database:Documentor}")
