@@ -14,25 +14,25 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class StorageConfiguration {
     
-    @Value("#{environment.AWS_ACCESS_KEY_ID}")
+    @Value("${documentor.storage.client-id}")
     private String clientId;
 
-    @Value("#{environment.AWS_SECRET_ACCESS_KEY}")
+    @Value("${documentor.storage.client-secret}")
     private String clientSecret;
 
-    @Value("#{environment.AWS_ENDPOINT}")
+    @Value("${documentor.storage.endpoint}")
     private String endpoint;
 
-    @Value("#{environment.AWS_REGION}")
+    @Value("${documentor.storage.region}")
     private String region;
 
-    @Value("${net.cavitos.documentor.storage.baseDirectory:private/documentor/documents}")
+    @Value("${documentor.storage.base-directory:private/documentor/documents}")
     private String baseDirectory;
 
-    @Value("${net.cavitos.documentor.storage.bucket:object-cavitos}")
+    @Value("${documentor.storage.bucket:object-cavitos}")
     private String bucket;
 
-    @Value("${net.cavitos.documentor.storage.subdomain.base.url:https://cdn.cavitos.net}")
+    @Value("${documentor.storage.subdomain.base.url:https://cdn.cavitos.net}")
     private String subdomainBaseUrl;
 
     @Bean

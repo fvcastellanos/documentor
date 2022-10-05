@@ -1,7 +1,11 @@
 package net.cavitos.documentor.web.controller;
 
+import net.cavitos.documentor.domain.web.Document;
+import net.cavitos.documentor.transformer.DocumentTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,43 +23,91 @@ import net.cavitos.documentor.web.model.request.DocumentRequest;
 import net.cavitos.documentor.web.model.response.ResourceResponse;
 import net.cavitos.documentor.web.validator.document.NewDocumentValidator;
 
-import static net.cavitos.documentor.web.controller.ControllerRoute.DOCUMENTS_ROUTE;
+import javax.validation.Valid;
+import java.security.Principal;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(DOCUMENTS_ROUTE)
+@RequestMapping("/documents")
 public class DocumentController extends BaseController {
-    
+
     @Autowired
     private DocumentService documentService;
 
     @Autowired
     private NewDocumentValidator newDocumentValidator;
 
-    @GetMapping("/{tenantId}")
-    public ResponseEntity<Page<ImageDocument>> getDocumentsByTenant(@PathVariable("tenantId") String tenantId,
-                                                     @RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "20") int size) {
+//    @GetMapping
+//    public ResponseEntity<Page<ImageDocument>> getDocumentsByTenant(@RequestParam(defaultValue = "0") final int page,
+//                                                                    @RequestParam(defaultValue = "20") final int size,
+//                                                                    final Principal principal) {
+//
+//        final var tenant = getUserTenant(principal);
+//        final var documents = documentService.findByTenantId(tenant, page, size);
+//        return new ResponseEntity<>(documents, HttpStatus.OK);
+//    }
 
-        final var documents = documentService.findByTenantId(tenantId, page, size);
-        return new ResponseEntity<>(documents, HttpStatus.OK);        
-    }
+    @GetMapping
+    public ResponseEntity<Page<Document>> search(@RequestParam(defaultValue = "0") final int page,
+                                           @RequestParam(defaultValue = "20") final int size,
+                                           @RequestParam(defaultValue = "") final String text,
+                                           final Principal principal) {
 
-    @PostMapping("/{tenantId}")
-    public ResponseEntity<ResourceResponse<ImageDocument>> addDocument(@PathVariable("tenantId") final String tenantId,
-                                                                       @RequestBody final DocumentRequest request) {
+        final var tenant = getUserTenant(principal);
+        final var imageDocumentPage = documentService.search(tenant, text, page, size);
 
-        var errors = buildErrorObject(request);
-        newDocumentValidator.validate(request, errors);
+        final var documents = imageDocumentPage.stream()
+                .map(DocumentTransformer::toWeb)
+                .collect(Collectors.toList());
 
-        if (errors.hasErrors()) {
-
-            throw new ValidationException(errors);
-        }
-
-        var storedDocument = documentService.addDocument(tenantId, request);
-        var response = new ResourceResponse<>(storedDocument, buildSelf(tenantId, storedDocument.getId()));
+        final var response = new PageImpl<>(documents, Pageable.ofSize(size),
+                imageDocumentPage.getTotalElements());
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Document> getById(@PathVariable("id") final String id,
+                                            final Principal principal) {
+
+        final var tenant = getUserTenant(principal);
+        final var imageDocument = documentService.findById(tenant, id);
+
+        final var response = DocumentTransformer.toWeb(imageDocument);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+//    @PostMapping
+//    public ResponseEntity<ResourceResponse<ImageDocument>> addDocument(@RequestBody @Valid final DocumentRequest request,
+//                                                                       final Principal principal) {
+//
+//        final var tenant = getUserTenant(principal);
+//        var errors = buildErrorObject(request);
+//        newDocumentValidator.validate(request, errors);
+//
+//        if (errors.hasErrors()) {
+//
+//            throw new ValidationException(errors);
+//        }
+//
+//        var storedDocument = documentService.addDocument(tenant, request);
+//        var response = new ResourceResponse<>(storedDocument, buildSelf(tenant, storedDocument.getId()));
+//
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//
+//        return null;
+//    }
+
+    @PostMapping
+    public ResponseEntity<Document> addDocument(@RequestBody @Valid final Document document,
+                                                final Principal principal) {
+
+        final var tenant = getUserTenant(principal);
+
+        var imageDocument = documentService.addDocument(tenant, document);
+        var response = DocumentTransformer.toWeb(imageDocument);
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     public ResponseEntity<ResourceResponse<ImageDocument>> updateDocument(@PathVariable final String tenantId,
@@ -71,18 +123,5 @@ public class DocumentController extends BaseController {
 
         return null;
 
-    }
-
-    // ---------------------------------------------------------------------------------------------------------
-
-    private String buildSelf(final String tenantId, final String self) {
-
-        return new StringBuilder()
-            .append(DOCUMENTS_ROUTE)
-            .append("/")
-            .append(tenantId)
-            .append("/")
-            .append(self)
-            .toString();
     }
 }

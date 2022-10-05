@@ -16,8 +16,8 @@
 
 	<properties>
 		<apache.commons-lang3.version>3.12.0</apache.commons-lang3.version>
-		<aws-java-sdk-s3.version>1.12.144</aws-java-sdk-s3.version>
-		<guava.version>31.0.1-jre</guava.version>
+		<aws-java-sdk-s3.version>1.12.315</aws-java-sdk-s3.version>
+		<guava.version>31.1-jre</guava.version>
 		<hibernate.bean-validator.version>6.2.1.Final</hibernate.bean-validator.version>
 		<java.version>17</java.version>
 		<lombok.version>1.18.22</lombok.version>

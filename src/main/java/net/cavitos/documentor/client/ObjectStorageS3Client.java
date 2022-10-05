@@ -1,5 +1,6 @@
 package net.cavitos.documentor.client;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -65,37 +66,37 @@ public class ObjectStorageS3Client implements ObjectStorageClient {
 
         try {
 
-            var key = baseDirectory + "/" + fileName;
-
+            final var key = baseDirectory + "/" + fileName;
             amazonS3.deleteObject(bucket, key);
+
         } catch (Exception ex) {
+
             LOGGER.error("can't remove file: {} - ", fileName, ex);
         }
     }
 
     // ------------------------------------------------------------------------------------------------------------------------
 
-    private String buildFileUrl(String tenantId, MultipartFile multipartFile) {
+    private String buildFileUrl(final String tenantId, final MultipartFile multipartFile) {
 
-        var stringBuilder = new StringBuilder();
-        stringBuilder.append(baseDirectory)
-            .append("/")
-            .append(tenantId)
-            .append("/")
-            .append(UUID.randomUUID().toString())
-            .append(buildFileExtension(multipartFile.getOriginalFilename()));
+        final var fileName = Objects.requireNonNull(multipartFile.getOriginalFilename());
 
-        return stringBuilder.toString();
+        return baseDirectory +
+                "/" +
+                tenantId +
+                "/" +
+                UUID.randomUUID() +
+                buildFileExtension(fileName);
     }
 
-    private String buildFileExtension(String fileName) {
+    private String buildFileExtension(final String fileName) {
 
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
-    private ObjectMetadata buildObjectMetadata(MultipartFile multipartFile) {
+    private ObjectMetadata buildObjectMetadata(final MultipartFile multipartFile) {
 
-        var objectMetadata = new ObjectMetadata();
+        final var objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(multipartFile.getSize());
         objectMetadata.setContentType(multipartFile.getContentType());
 
