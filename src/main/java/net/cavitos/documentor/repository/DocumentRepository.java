@@ -18,4 +18,6 @@ public interface DocumentRepository extends PagingAndSortingRepository<ImageDocu
     Page<ImageDocument> findByTenantIdAndText(String tenantId, String text, Pageable pageable);
 
     Optional<ImageDocument> findByTenantIdAndName(String tenantId, String name);
+
+    Optional<ImageDocument> findByTenantIdAndId(String tenantId, String name);
 }

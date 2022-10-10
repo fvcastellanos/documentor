@@ -73,7 +73,7 @@ public class UploadService {
         imageDocument.setUploads(uploads);
         documentRepository.save(imageDocument);
 
-        LOGGER.info("document: {} was updated for tenant: {} for files: ", documentId, tenantId, files);
+        LOGGER.info("document: {} was updated for tenant: {} for files: {}", documentId, tenantId, files);
         
         return imageDocument;
     }

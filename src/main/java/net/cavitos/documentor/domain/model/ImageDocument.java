@@ -30,10 +30,11 @@ public class ImageDocument {
 
     @NotEmpty
     @Size(max = 150)
-    @Indexed(name = "idx_documents_name")
+    @TextIndexed
     private String name;
 
     @Size(max = 300)
+    @TextIndexed
     private String description;
 
     @TextIndexed
@@ -45,6 +46,7 @@ public class ImageDocument {
 
     @NotEmpty
     @Size(max = 50)
+    @Indexed(name = "idx_tenantId")
     private String tenantId;
 
     @CreatedDate
