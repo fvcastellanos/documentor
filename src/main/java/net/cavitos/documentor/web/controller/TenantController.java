@@ -1,7 +1,12 @@
 package net.cavitos.documentor.web.controller;
 
+import net.cavitos.documentor.domain.web.Tenant;
+import net.cavitos.documentor.service.TenantService;
+import net.cavitos.documentor.transformer.TenantTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,97 +19,68 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.cavitos.documentor.domain.exception.ValidationException;
-import net.cavitos.documentor.domain.model.Tenant;
-import net.cavitos.documentor.service.TenantService;
-import net.cavitos.documentor.web.model.request.NewTenantRequest;
-import net.cavitos.documentor.web.model.request.UpdateTenantRequest;
-import net.cavitos.documentor.web.model.response.ResourceResponse;
-import net.cavitos.documentor.web.validator.tenant.NewTenantRequestValidator;
-import net.cavitos.documentor.web.validator.tenant.UpdateTenantRequestValidator;
-
-import static net.cavitos.documentor.web.controller.ControllerRoute.TENANTS_ROUTE;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 @RestController
-@RequestMapping(ControllerRoute.TENANTS_ROUTE)
+@RequestMapping("/tenants")
 public class TenantController extends BaseController {
     
-    @Autowired
-    private TenantService tenantService;
+    private final TenantService tenantService;
 
     @Autowired
-    private NewTenantRequestValidator newTenantRequestValidator;
+    public TenantController(final TenantService tenantService) {
 
-    @Autowired
-    private UpdateTenantRequestValidator updateTenantRequestValidator;
+        this.tenantService = tenantService;
+    }
 
     @RequestMapping
     public ResponseEntity<Page<Tenant>> getTenants(@RequestParam(defaultValue = DEFAULT_SIZE) final int size,
                                                    @RequestParam(defaultValue = DEFAULT_PAGE) final int page) {
 
-        var tenantPage = tenantService.getTenants(size, page);        
-        return new ResponseEntity<>(tenantPage, HttpStatus.OK);
+        final var tenantPage = tenantService.getTenants(size, page);
+
+        final var tenants = tenantPage.stream()
+                .map(TenantTransformer::toWeb)
+                .toList();
+
+        final var response = new PageImpl<>(tenants, Pageable.ofSize(size), tenantPage.getTotalElements());
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/{tenantId}")
-    public ResponseEntity<ResourceResponse<Tenant>> getTenantById(@PathVariable final String tenantId) {
+    @GetMapping("/{id}")
+    public ResponseEntity<Tenant> getTenantById(@PathVariable final String id) {
 
-        var tenant = tenantService.getTenantById(tenantId);
+        var tenant = tenantService.getTenantById(id);
 
-        var response = new ResourceResponse<>(tenant, buildSelf(tenant.getTenantId()));
+        var response = TenantTransformer.toWeb(tenant);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<ResourceResponse<Tenant>> newTenant(@RequestBody final NewTenantRequest newTenantRequest) {
+    public ResponseEntity<Tenant> newTenant(@RequestBody @Valid final Tenant tenant) {
 
-        var errors = buildErrorObject(newTenantRequest);
-        newTenantRequestValidator.validate(newTenantRequest, errors);
+        final var storedTenant = tenantService.newTenant(tenant);
 
-        if (errors.hasErrors()) {
-
-            throw new ValidationException(errors);
-        }
-
-        var storedTenant = tenantService.newTenant(newTenantRequest);
-
-        var response = new ResourceResponse<>(storedTenant, buildSelf(storedTenant.getTenantId()));
+        final var response = TenantTransformer.toWeb(storedTenant);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{tenantId}")
-    public ResponseEntity<ResourceResponse<Tenant>> updateTenant(@PathVariable final String tenantId,     
-                                                                    @RequestBody final UpdateTenantRequest tenant) {
+    @PutMapping("/{id}")
+    public ResponseEntity<Tenant> updateTenant(@PathVariable @NotEmpty @Size(max = 50) final String id,
+                                               @RequestBody @Valid final Tenant tenant) {
 
-        var errors = buildErrorObject(tenant);
-        updateTenantRequestValidator.validate(tenant, errors);
+        var updatedTenant = tenantService.updateTenant(id, tenant);
 
-        if (errors.hasErrors()) {
-
-            throw new ValidationException(errors);
-        }
-
-        var updatedTenant = tenantService.updateTenant(tenantId, tenant);
-
-        var response = new ResourceResponse<>(updatedTenant, buildSelf(updatedTenant.getTenantId()));
+        var response = TenantTransformer.toWeb(updatedTenant);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{tenantId}")
-    public ResponseEntity<Void> deleteTenant(@PathVariable final String tenantId) {
-        
-        tenantService.deleteTenant(tenantId);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    // ---------------------------------------------------------------------------------------------------------
-
-    private String buildSelf(String self) {
-
-        return new StringBuilder()
-            .append(TENANTS_ROUTE)
-            .append("/")
-            .append(self)
-            .toString();
-    }
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deleteTenant(@PathVariable final String id) {
+//
+//        tenantService.deleteTenant(id);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 }

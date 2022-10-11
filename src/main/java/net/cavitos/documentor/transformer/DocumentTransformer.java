@@ -3,7 +3,6 @@ package net.cavitos.documentor.transformer;
 import net.cavitos.documentor.domain.model.ImageDocument;
 import net.cavitos.documentor.domain.web.Document;
 import net.cavitos.documentor.web.controller.DocumentController;
-import net.cavitos.documentor.web.model.request.DocumentRequest;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;

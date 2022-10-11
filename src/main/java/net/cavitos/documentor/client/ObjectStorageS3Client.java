@@ -1,8 +1,10 @@
 package net.cavitos.documentor.client;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -35,18 +37,18 @@ public class ObjectStorageS3Client implements ObjectStorageClient {
     }
 
     @Override
-    public Optional<StoredDocument> storeDocument(MultipartFile multipartFile, String tenantId) {
+    public Optional<StoredDocument> storeDocument(final MultipartFile multipartFile, final String documentId, final String tenantId) {
 
         try {
 
             LOGGER.info("upload file: {} for tenantId: {}", multipartFile.getOriginalFilename(), tenantId);
 
-            var key = buildFileUrl(tenantId, multipartFile);
+            var key = buildFileUrl(tenantId, documentId, multipartFile);
             var objectMetadata = buildObjectMetadata(multipartFile);
 
             var storedDocument = StoredDocument.builder()
                 .fileName(key)
-                .Url(subdomainBaseUrl + "/" + key)
+                .url(subdomainBaseUrl + "/" + key)
                 .build();
 
             amazonS3.putObject(bucket, key, multipartFile.getInputStream(), objectMetadata);
@@ -62,12 +64,11 @@ public class ObjectStorageS3Client implements ObjectStorageClient {
     }
 
     @Override
-    public void removeDocument(String fileName) {
+    public void removeDocument(final String fileName) {
 
         try {
 
-            final var key = baseDirectory + "/" + fileName;
-            amazonS3.deleteObject(bucket, key);
+            amazonS3.deleteObject(bucket, fileName);
 
         } catch (Exception ex) {
 
@@ -75,15 +76,31 @@ public class ObjectStorageS3Client implements ObjectStorageClient {
         }
     }
 
+    @Override
+    public List<StoredDocument> getStoredDocuments(final String documentId, final String tenantId) {
+
+        final var objects = amazonS3.listObjects(bucket,  baseDirectory + "/" + tenantId + "/" + documentId);
+
+        return objects.getObjectSummaries()
+                .stream()
+                .map(s3ObjectSummary -> StoredDocument.builder()
+                        .fileName(s3ObjectSummary.getKey())
+                        .url(subdomainBaseUrl + "/" + s3ObjectSummary.getKey())
+                        .build()
+                ).collect(Collectors.toList());
+    }
+
     // ------------------------------------------------------------------------------------------------------------------------
 
-    private String buildFileUrl(final String tenantId, final MultipartFile multipartFile) {
+    private String buildFileUrl(final String tenantId, final String documentId, final MultipartFile multipartFile) {
 
         final var fileName = Objects.requireNonNull(multipartFile.getOriginalFilename());
 
         return baseDirectory +
                 "/" +
                 tenantId +
+                "/" +
+                documentId +
                 "/" +
                 UUID.randomUUID() +
                 buildFileExtension(fileName);

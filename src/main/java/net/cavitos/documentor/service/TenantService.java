@@ -1,49 +1,42 @@
 package net.cavitos.documentor.service;
 
+import net.cavitos.documentor.builder.BusinessExceptionBuilder;
+import net.cavitos.documentor.domain.model.TenantDocument;
+import net.cavitos.documentor.domain.model.status.ActiveStatus;
+import net.cavitos.documentor.domain.web.Tenant;
+import net.cavitos.documentor.repository.TenantRepository;
+import net.cavitos.documentor.transformer.TenantTransformer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-
-import net.cavitos.documentor.builder.BusinessExceptionBuilder;
-import net.cavitos.documentor.domain.model.Tenant;
-import net.cavitos.documentor.repository.TenantRepository;
-import net.cavitos.documentor.transformer.TenantTransformer;
-import net.cavitos.documentor.web.model.request.NewTenantRequest;
-import net.cavitos.documentor.web.model.request.UpdateTenantRequest;
 
 @Service
 public class TenantService {
     
     private final TenantRepository tenantRepository;
 
+    @Autowired
     public TenantService(final TenantRepository tenantRepository) {
 
         this.tenantRepository = tenantRepository;
     }
 
-    public Page<Tenant> getTenants(final int size, final int page) {
+    public Page<TenantDocument> getTenants(final int size, final int page) {
 
         final var pageable = PageRequest.of(page, size);
         return tenantRepository.findAll(pageable);
     }
 
-    public Tenant getTenantById(final String tenantId) {
+    public TenantDocument getTenantById(final String id) {
 
-        var tenantHolder = tenantRepository.findByTenantId(tenantId);
-
-        if(tenantHolder.isEmpty()) {
-
-            throw BusinessExceptionBuilder.notFoundException("Tenant: %s not found", tenantId);
-        }
-
-        return tenantHolder.get();
+        return tenantRepository.findById(id)
+                .orElseThrow(() -> BusinessExceptionBuilder.notFoundException("Tenant: %s not found", id));
     }
 
-    public Tenant newTenant(final NewTenantRequest tenantRequest) {
+    public TenantDocument newTenant(final Tenant tenant) {
 
-        final var tenantId = tenantRequest.getTenantId();
-        final var email = tenantRequest.getEmail();
-        
+        final var tenantId = tenant.getTenantId();
         var tenantHolder = tenantRepository.findByTenantId(tenantId);
         
         if(tenantHolder.isPresent()) {
@@ -51,6 +44,7 @@ public class TenantService {
             throw BusinessExceptionBuilder.unprocessableException("Tenant: %s already exists", tenantId);
         }
 
+        final var email = tenant.getEmail();
         tenantHolder = tenantRepository.findByEmail(email);
 
         if (tenantHolder.isPresent()) {
@@ -58,33 +52,40 @@ public class TenantService {
             throw BusinessExceptionBuilder.unprocessableException("Email: %s already exists", email);
         }
 
-        return tenantRepository.save(TenantTransformer.toModel(tenantRequest));
+        return tenantRepository.save(TenantTransformer.toModel(tenant));
     }
 
-    public Tenant updateTenant(final String tenantId, final UpdateTenantRequest updateTenantRequest) {
+    public TenantDocument updateTenant(final String id, final Tenant tenant) {
 
-        var tenantHolder = tenantRepository.findByTenantId(tenantId);
-        
-        if(tenantHolder.isEmpty()) {
+        var tenantDocument = tenantRepository.findById(id)
+                .orElseThrow(() -> BusinessExceptionBuilder.notFoundException("Tenant: %s not found", id));
 
-            throw BusinessExceptionBuilder.notFoundException("Tenant: %s not found", tenantId);
-        }
+        tenantRepository.findByEmail(tenant.getEmail())
+                .ifPresent(existingTenant -> {
 
-        var storedTenant = tenantHolder.get();
+                    if (!existingTenant.getId().equalsIgnoreCase(tenantDocument.getId())) {
 
-        // Evaluate the logic to update email
-        storedTenant.setName(updateTenantRequest.getName());
+                        throw BusinessExceptionBuilder.unprocessableException("Email belongs to another tenant");
+                    }
+                });
 
-        return tenantRepository.save(storedTenant);
+        final var status = ActiveStatus.of(tenant.getStatus())
+                        .getValue();
+
+        tenantDocument.setName(tenant.getName());
+        tenantDocument.setEmail(tenant.getEmail());
+        tenantDocument.setStatus(status);
+
+        return tenantRepository.save(tenantDocument);
     }
 
-    public void deleteTenant(final String tenantId) {
-
-        var tenantHolder = tenantRepository.findByTenantId(tenantId);
-
-        tenantHolder.ifPresent(tenant -> {
-
-            tenantRepository.delete(tenant);
-        });
-    }
+//    public void deleteTenant(final String tenantId) {
+//
+//        var tenantHolder = tenantRepository.findByTenantId(tenantId);
+//
+//        tenantHolder.ifPresent(tenant -> {
+//
+//            tenantRepository.delete(tenant);
+//        });
+//    }
 }

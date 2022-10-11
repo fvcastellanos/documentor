@@ -7,12 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
-import net.cavitos.documentor.domain.model.Tenant;
+import net.cavitos.documentor.domain.model.TenantDocument;
 
-public interface TenantRepository extends PagingAndSortingRepository<Tenant, String> {
+public interface TenantRepository extends PagingAndSortingRepository<TenantDocument, String> {
     
-    Page<Tenant> findAll(Pageable pageable);
-    Page<Tenant> findByParentTenantId(@Param("tenantId") String parentTenantId, Pageable pageable);
-    Optional<Tenant> findByTenantId(String tenantId);
-    Optional<Tenant> findByEmail(String email);
+    Page<TenantDocument> findAll(Pageable pageable);
+    Page<TenantDocument> findByParentTenantId(@Param("tenantId") String parentTenantId, Pageable pageable);
+    Optional<TenantDocument> findByTenantId(String tenantId);
+    Optional<TenantDocument> findByEmail(String email);
 }

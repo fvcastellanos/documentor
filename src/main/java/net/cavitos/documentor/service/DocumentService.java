@@ -1,11 +1,14 @@
 package net.cavitos.documentor.service;
 
 import net.cavitos.documentor.builder.BusinessExceptionBuilder;
+import net.cavitos.documentor.client.ObjectStorageClient;
 import net.cavitos.documentor.domain.model.ImageDocument;
+import net.cavitos.documentor.domain.model.Upload;
 import net.cavitos.documentor.domain.web.Document;
 import net.cavitos.documentor.repository.DocumentRepository;
 import net.cavitos.documentor.repository.TenantRepository;
 import net.cavitos.documentor.transformer.DocumentTransformer;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,20 +17,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class DocumentService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DocumentService.class);
 
+    private final ObjectStorageClient objectStorageClient;
     private final DocumentRepository documentRepository;
     private final TenantRepository tenantRepository;
 
     @Autowired
     public DocumentService(final DocumentRepository documentRepository, 
-                           final TenantRepository tenantRepository) {
+                           final TenantRepository tenantRepository,
+                           final ObjectStorageClient objectStorageClient) {
 
         this.documentRepository = documentRepository;
         this.tenantRepository = tenantRepository;
+        this.objectStorageClient = objectStorageClient;
     }
 
     public Page<ImageDocument> search(final String tenant, final String text, final int page, final int size) {
@@ -105,18 +113,25 @@ public class DocumentService {
     }
 
     public void deleteDocument(final String tenantId,
-                               final String id) {
+                               final String documentId) {
 
-        final var imageDocumentHolder = documentRepository.findByTenantIdAndId(tenantId, id);
+        LOGGER.info("Delete document_id: {} for tenant: {}", documentId, tenantId);
 
-        if (imageDocumentHolder.isPresent()) {
+        final var imageDocument = documentRepository.findById(documentId)
+                .orElseThrow(() -> BusinessExceptionBuilder.notFoundException("Document: %s was not found for tenant: %s", documentId, tenantId));
 
-            final var imageDocument = imageDocumentHolder.get();
+        final var objects = objectStorageClient.getStoredDocuments(documentId, tenantId);
 
+        if (objects.size() > 0) {
 
+            LOGGER.info("Delete uploads from storage related to document_id: {} for tenant: {}", documentId, tenantId);
+            deleteUploads(tenantId, imageDocument.getUploads());
         }
+
+        documentRepository.delete(imageDocument);
+        LOGGER.info("Document with id: {} was deleted for tenant: {}, unable to undo this operation", documentId, tenantId);
     }
-    
+
     // -------------------------------------------------------------------------------------
 
     private void verifyTenantIdExists(final String tenantId) {
@@ -130,4 +145,14 @@ public class DocumentService {
             throw exception;
         }
     }
+
+    private void deleteUploads(String tenantId, final List<Upload> uploads) {
+
+        CollectionUtils.emptyIfNull(uploads)
+                .forEach(file -> {
+                    LOGGER.info("delete file: {} for tenant: {}", file.getFileName(), tenantId);
+                    objectStorageClient.removeDocument(file.getFileName());
+                });
+    }
+
 }

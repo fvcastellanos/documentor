@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,8 @@ public class UploadService {
                               final String documentId,
                               final List<MultipartFile> files) {
 
+        LOGGER.info("files to be uploaded: {} for tenantId: {}", files.size(), tenantId);
+
         final var imageDocumentHolder = documentRepository.findById(documentId);
 
         if (imageDocumentHolder.isEmpty()) {
@@ -52,7 +55,8 @@ public class UploadService {
 
         for (final MultipartFile multipartFile : files) {
 
-            final var storedDocumentHolder = objectStorageClient.storeDocument(multipartFile, tenantId);
+            final var storedDocumentHolder = objectStorageClient.storeDocument(multipartFile,
+                    documentId, tenantId);
 
             if (storedDocumentHolder.isPresent()) {
     
@@ -63,7 +67,7 @@ public class UploadService {
 
                 LOGGER.info("store document file: {} for tenantId: {}", multipartFile, tenantId);
 
-                break;
+                break; // not sure why this break
             }
         }
 
@@ -102,6 +106,9 @@ public class UploadService {
 
             LOGGER.info("upload: {} found for document: {} - tenant: {}", uploadId, documentId, tenantId);
 
+            LOGGER.info("Delete file: {} for tenant: {}", upload.getFileName(), tenantId);
+            objectStorageClient.removeDocument(upload.getFileName());
+
             final var updatedUploads = uploads.stream()
                 .filter(removeUpload -> !removeUpload.getId().equals(uploadId))
                 .collect(Collectors.toList());
@@ -115,17 +122,29 @@ public class UploadService {
         });
     }
 
-    public List<Upload> getUploads(String tenantId, String documentId) {
+    public List<Upload> getUploads(final String tenantId, final String documentId) {
 
-        final var imageDocumentHolder = documentRepository.findById(documentId);
+        LOGGER.info("get uploads for tenant: {} - document: {}", tenantId, documentId);
 
-        if (imageDocumentHolder.isEmpty()) {
+        final var imageDocument = documentRepository.findById(documentId)
+                .orElseThrow(() -> BusinessExceptionBuilder.notFoundException("Document: %s was not found for tenant: %s", documentId, tenantId));
 
-            throw BusinessExceptionBuilder.notFoundException("Document: %s was not found for tenant: %s", documentId, tenantId);
-        }
+        return CollectionUtils.emptyIfNull(imageDocument.getUploads())
+                .stream().toList();
+    }
 
-        return imageDocumentHolder.map(ImageDocument::getUploads)
-            .orElse(Lists.newArrayList());
+    public Upload getUploadById(final String tenantId, final String documentId, final String uploadId) {
+
+        LOGGER.info("get uploadId: {} for documentId: {} and tenant: {}", uploadId, documentId, tenantId);
+
+        final var imageDocument = documentRepository.findByTenantIdAndId(tenantId, documentId)
+                .orElseThrow(() -> BusinessExceptionBuilder.notFoundException("Document not found"));
+
+        return CollectionUtils.emptyIfNull(imageDocument.getUploads())
+                .stream()
+                .filter(file -> file.getId().equalsIgnoreCase(uploadId))
+                .findFirst()
+                .orElseThrow(() -> BusinessExceptionBuilder.notFoundException("Upload not found"));
     }
 
     // ------------------------------------------------------------------------------------------
