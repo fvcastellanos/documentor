@@ -66,8 +66,6 @@ public class UploadService {
                 uploads.add(upload);
 
                 LOGGER.info("store document file: {} for tenantId: {}", multipartFile, tenantId);
-
-                break; // not sure why this break
             }
         }
 

@@ -78,14 +78,4 @@ public class TenantService {
 
         return tenantRepository.save(tenantDocument);
     }
-
-//    public void deleteTenant(final String tenantId) {
-//
-//        var tenantHolder = tenantRepository.findByTenantId(tenantId);
-//
-//        tenantHolder.ifPresent(tenant -> {
-//
-//            tenantRepository.delete(tenant);
-//        });
-//    }
 }
