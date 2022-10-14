@@ -1,88 +1,168 @@
 package net.cavitos.documentor.web.controller;
 
+import net.cavitos.documentor.domain.web.Document;
+import net.cavitos.documentor.domain.web.FileUpload;
+import net.cavitos.documentor.service.DocumentService;
+import net.cavitos.documentor.service.UploadService;
+import net.cavitos.documentor.transformer.DocumentTransformer;
+import net.cavitos.documentor.transformer.FileUploadTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-import net.cavitos.documentor.domain.exception.ValidationException;
-import net.cavitos.documentor.domain.model.ImageDocument;
-import net.cavitos.documentor.service.DocumentService;
-import net.cavitos.documentor.web.model.request.DocumentRequest;
-import net.cavitos.documentor.web.model.response.ResourceResponse;
-import net.cavitos.documentor.web.validator.document.NewDocumentValidator;
-
-import static net.cavitos.documentor.web.controller.ControllerRoute.DOCUMENTS_ROUTE;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.security.Principal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(DOCUMENTS_ROUTE)
+@RequestMapping("/documents")
 public class DocumentController extends BaseController {
-    
-    @Autowired
-    private DocumentService documentService;
+
+    private final DocumentService documentService;
+    private final UploadService uploadService;
 
     @Autowired
-    private NewDocumentValidator newDocumentValidator;
+    public DocumentController(final DocumentService documentService,
+                              final UploadService uploadService) {
 
-    @GetMapping("/{tenantId}")
-    public ResponseEntity<Page<ImageDocument>> getDocumentsByTenant(@PathVariable("tenantId") String tenantId,
-                                                     @RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "20") int size) {
-
-        final var documents = documentService.findByTenantId(tenantId, page, size);
-        return new ResponseEntity<>(documents, HttpStatus.OK);        
+        this.documentService = documentService;
+        this.uploadService = uploadService;
     }
 
-    @PostMapping("/{tenantId}")
-    public ResponseEntity<ResourceResponse<ImageDocument>> addDocument(@PathVariable("tenantId") final String tenantId,
-                                                                       @RequestBody final DocumentRequest request) {
+    @GetMapping
+    public ResponseEntity<Page<Document>> search(@RequestParam(defaultValue = "") @NotEmpty @Size(max = 50) final String text,
+                                                 @RequestParam(defaultValue = "0") final int page,
+                                                 @RequestParam(defaultValue = "20") final int size,
+                                                 final Principal principal) {
 
-        var errors = buildErrorObject(request);
-        newDocumentValidator.validate(request, errors);
+        final var tenant = getUserTenant(principal);
+        final var imageDocumentPage = documentService.search(tenant, text, page, size);
 
-        if (errors.hasErrors()) {
+        final var documents = imageDocumentPage.stream()
+                .map(DocumentTransformer::toWeb)
+                .collect(Collectors.toList());
 
-            throw new ValidationException(errors);
-        }
-
-        var storedDocument = documentService.addDocument(tenantId, request);
-        var response = new ResourceResponse<>(storedDocument, buildSelf(tenantId, storedDocument.getId()));
+        final var response = new PageImpl<>(documents, Pageable.ofSize(size),
+                imageDocumentPage.getTotalElements());
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    public ResponseEntity<ResourceResponse<ImageDocument>> updateDocument(@PathVariable final String tenantId,
-                                                                          @RequestBody final DocumentRequest request) {
-        
-        final var errors = buildErrorObject(request);
-        newDocumentValidator.validate(request, errors);
+    @GetMapping("/{id}")
+    public ResponseEntity<Document> getById(@PathVariable @NotEmpty @Size(max = 50) final String id,
+                                            final Principal principal) {
 
-        if (errors.hasErrors()) {
+        final var tenant = getUserTenant(principal);
+        final var imageDocument = documentService.findById(tenant, id);
 
-            throw new ValidationException(errors);
-        }
-
-        return null;
-
+        final var response = DocumentTransformer.toWeb(imageDocument);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // ---------------------------------------------------------------------------------------------------------
+    @PostMapping
+    public ResponseEntity<Document> addDocument(@RequestBody @Valid final Document document,
+                                                final Principal principal) {
 
-    private String buildSelf(final String tenantId, final String self) {
+        final var tenant = getUserTenant(principal);
 
-        return new StringBuilder()
-            .append(DOCUMENTS_ROUTE)
-            .append("/")
-            .append(tenantId)
-            .append("/")
-            .append(self)
-            .toString();
+        final var imageDocument = documentService.addDocument(tenant, document);
+        final var response = DocumentTransformer.toWeb(imageDocument);
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Document> updateDocument(@PathVariable @NotEmpty @Size(max = 50) final String id,
+                                                   @RequestBody @Valid final Document document,
+                                                   final Principal principal) {
+
+        final var tenant = getUserTenant(principal);
+
+        final var imageDocument = documentService.updateDocument(tenant, id, document);
+        final var response = DocumentTransformer.toWeb(imageDocument);
+
+        return  new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDocument(@PathVariable @NotEmpty @Size(max = 50) final String id,
+                                               final Principal principal) {
+
+        final var tenant = getUserTenant(principal);
+        documentService.deleteDocument(tenant, id);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    // --------------------------------------------------------------------------------------------------------
+
+    @PostMapping("/{id}/uploads")
+    public ResponseEntity<Document> uploadDocument(@PathVariable @NotEmpty @Size(max = 50) final String id,
+                                                        @RequestParam("files") @Valid @NotNull final List<MultipartFile> files,
+                                                        final Principal principal) {
+
+        final var tenant = getUserTenant(principal);
+
+        final var imageDocument = uploadService.storeDocument(tenant, id, files);
+        final var response = DocumentTransformer.toWeb(imageDocument);
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}/uploads")
+    public ResponseEntity<Page<FileUpload>> getUploads(@PathVariable @NotEmpty @Size(max = 50) final String id,
+                                                   final Principal principal) {
+
+        final var tenant = getUserTenant(principal);
+
+        final var uploads = uploadService.getUploads(tenant, id)
+                .stream()
+                .map(upload -> FileUploadTransformer.toWeb(id, upload))
+                .collect(Collectors.toList());
+
+        final var response = new PageImpl<>(uploads, Pageable.ofSize(50), uploads.size());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/uploads/{uploadId}")
+    public ResponseEntity<FileUpload> getUploadById(@PathVariable @NotEmpty @Size(max = 50) final String id,
+                                                    @PathVariable("uploadId") @NotEmpty @Size(max = 50) final String uploadId,
+                                                    final Principal principal) {
+
+        final var tenant = getUserTenant(principal);
+        final var upload = uploadService.getUploadById(tenant, id, uploadId);
+
+        final var response = FileUploadTransformer.toWeb(id, upload);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}/uploads/{uploadId}")
+    public ResponseEntity<Void> deleteDocument(@PathVariable @NotEmpty @Size(max = 50) final String id,
+                                               @PathVariable("uploadId") @NotEmpty @Size(max = 50) final String uploadId,
+                                               final Principal principal) {
+
+        final var tenant = getUserTenant(principal);
+
+        uploadService.deleteUpload(tenant, id, uploadId);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
 }

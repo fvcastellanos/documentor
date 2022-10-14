@@ -14,5 +14,5 @@ import lombok.ToString;
 public class StoredDocument {
     
     private String fileName;
-    private String Url;
+    private String url;
 }

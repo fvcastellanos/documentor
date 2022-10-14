@@ -9,6 +9,7 @@ import javax.validation.constraints.Size;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.TextScore;
 
@@ -29,12 +30,14 @@ public class ImageDocument {
 
     @NotEmpty
     @Size(max = 150)
-    @Indexed(name = "idx_documents_name")
+    @TextIndexed
     private String name;
 
     @Size(max = 300)
+    @TextIndexed
     private String description;
 
+    @TextIndexed
     private List<String> tags;
 
     private String path;
@@ -43,6 +46,7 @@ public class ImageDocument {
 
     @NotEmpty
     @Size(max = 50)
+    @Indexed(name = "idx_tenantId")
     private String tenantId;
 
     @CreatedDate

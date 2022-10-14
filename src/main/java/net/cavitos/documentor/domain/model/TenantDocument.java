@@ -21,7 +21,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 @Document(collection = "tenants")
-public class Tenant {
+public class TenantDocument {
     
     @Id
     private String id;
@@ -42,6 +42,9 @@ public class Tenant {
     @Size(max = 250)
     @Indexed(unique = true, name = "idx_tenants_email")
     private String email;
+
+    @Size(max = 20)
+    private String status;
 
     @CreatedDate
     private Instant created;

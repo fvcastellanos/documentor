@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.validation.Errors;
 
-import net.cavitos.documentor.web.model.response.error.FieldError;
+import net.cavitos.documentor.domain.web.response.error.FieldError;
 
 public class ValidationException extends RuntimeException {
 
