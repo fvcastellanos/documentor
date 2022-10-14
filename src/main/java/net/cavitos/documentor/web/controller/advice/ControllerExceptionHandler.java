@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import net.cavitos.documentor.domain.exception.AuthenticationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -56,14 +57,14 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(exception, error, buildHttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
-//    @ExceptionHandler(AuthenticationException.class)
-//    public ResponseEntity<Object> handleAuthenticationException(AuthenticationException exception, WebRequest request) {
-//
-//        LOGGER.error("access denied to resource", exception);
-//
-//        var error = buildErrorResponse(exception.getMessage());
-//        return handleExceptionInternal(exception, error, buildHttpHeaders(), HttpStatus.FORBIDDEN, request);
-//    }
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Object> handleAuthenticationException(AuthenticationException exception, WebRequest request) {
+
+        LOGGER.error("access denied to resource", exception);
+
+        var error = buildErrorResponse(exception.getMessage());
+        return handleExceptionInternal(exception, error, buildHttpHeaders(), HttpStatus.FORBIDDEN, request);
+    }
 
     // ------------------------------------------------------------------------------------------------
 

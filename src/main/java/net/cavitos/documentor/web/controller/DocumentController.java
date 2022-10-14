@@ -2,6 +2,7 @@ package net.cavitos.documentor.web.controller;
 
 import net.cavitos.documentor.domain.web.Document;
 import net.cavitos.documentor.domain.web.FileUpload;
+import net.cavitos.documentor.security.service.UserService;
 import net.cavitos.documentor.service.DocumentService;
 import net.cavitos.documentor.service.UploadService;
 import net.cavitos.documentor.transformer.DocumentTransformer;
@@ -40,8 +41,10 @@ public class DocumentController extends BaseController {
 
     @Autowired
     public DocumentController(final DocumentService documentService,
-                              final UploadService uploadService) {
+                              final UploadService uploadService,
+                              final UserService userService) {
 
+        super(userService);
         this.documentService = documentService;
         this.uploadService = uploadService;
     }

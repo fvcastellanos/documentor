@@ -1,6 +1,7 @@
 package net.cavitos.documentor.web.controller;
 
 import net.cavitos.documentor.domain.web.Tenant;
+import net.cavitos.documentor.security.service.UserService;
 import net.cavitos.documentor.service.TenantService;
 import net.cavitos.documentor.transformer.TenantTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/tenants")
@@ -29,12 +32,14 @@ public class TenantController extends BaseController {
     private final TenantService tenantService;
 
     @Autowired
-    public TenantController(final TenantService tenantService) {
+    public TenantController(final TenantService tenantService,
+                            final UserService userService) {
 
+        super(userService);
         this.tenantService = tenantService;
     }
 
-    @RequestMapping
+    @GetMapping
     public ResponseEntity<Page<Tenant>> getTenants(@RequestParam(defaultValue = DEFAULT_SIZE) final int size,
                                                    @RequestParam(defaultValue = DEFAULT_PAGE) final int page) {
 
