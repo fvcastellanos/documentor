@@ -1,26 +1,26 @@
 package net.cavitos.documentor.web.controller.advice;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import net.cavitos.documentor.domain.exception.AuthenticationException;
+import net.cavitos.documentor.domain.exception.BusinessException;
+import net.cavitos.documentor.domain.exception.ValidationException;
+import net.cavitos.documentor.domain.web.response.error.ErrorResponse;
+import net.cavitos.documentor.domain.web.response.error.FieldError;
+import net.cavitos.documentor.domain.web.response.error.ValidationErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import net.cavitos.documentor.domain.exception.BusinessException;
-import net.cavitos.documentor.domain.exception.ValidationException;
-import net.cavitos.documentor.domain.web.response.error.ErrorResponse;
-import net.cavitos.documentor.domain.web.response.error.FieldError;
-import net.cavitos.documentor.domain.web.response.error.ValidationErrorResponse;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
@@ -57,8 +57,8 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(exception, error, buildHttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<Object> handleAuthenticationException(AuthenticationException exception, WebRequest request) {
+    @ExceptionHandler({AuthenticationException.class, AccessDeniedException.class})
+    public ResponseEntity<Object> handleAuthenticationException(Exception exception, WebRequest request) {
 
         LOGGER.error("access denied to resource", exception);
 

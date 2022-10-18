@@ -1,5 +1,6 @@
 package net.cavitos.documentor.security.configuration;
 
+import com.auth0.spring.security.api.JwtWebSecurityConfigurer;
 import net.cavitos.documentor.repository.TenantRepository;
 import net.cavitos.documentor.repository.UserRepository;
 import net.cavitos.documentor.security.service.MongoDbUserService;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
@@ -27,6 +29,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration {
 
     @Value("${auth0.audience}")
@@ -49,20 +52,19 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
 
-        http.cors(withDefaults())
-                .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/tenants/{id}/**").hasAuthority("SCOPE_admin")
-                .antMatchers(HttpMethod.GET, "/tenants/**").hasAuthority("SCOPE_admin")
-                .antMatchers(HttpMethod.POST, "/tenants/**").hasAuthority("SCOPE_admin")
-                .antMatchers(HttpMethod.PUT, "/tenants/**").hasAuthority("SCOPE_admin")
-                .mvcMatchers(HttpMethod.GET, "/actuator/**").permitAll() // GET requests don't need auth
-                .anyRequest()
-                .authenticated()
-                .and()
-                .oauth2ResourceServer()
-                .jwt()
-                .decoder(jwtDecoder());
-
+        JwtWebSecurityConfigurer
+                .forRS256(audience, issuer)
+                        .configure(http)
+                           .cors(withDefaults())
+                            .authorizeRequests()
+                            .mvcMatchers(HttpMethod.GET, "/actuator/**").permitAll() // GET requests don't need auth
+                            .anyRequest()
+                            .authenticated()
+                            .and()
+                            .oauth2ResourceServer()
+                            .jwt()
+                            .decoder(jwtDecoder());
+        
         return http.build();
     }
 

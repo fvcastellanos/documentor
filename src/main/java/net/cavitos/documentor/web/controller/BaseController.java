@@ -36,13 +36,4 @@ public abstract class BaseController {
 
         return userProfile.getTenant();
     }
-
-//    protected String getUserTenant(Principal principal) {
-//
-//        // Will remove comments once spring security is configured
-////        final var userProfile = getUserProfile(principal);
-////        return userProfile.getTenant();
-//
-//        return DEFAULT_TENANT;
-//    }
 }

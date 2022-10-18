@@ -17,6 +17,7 @@
 	<properties>
 		<apache.commons-collectinos4.version>4.4</apache.commons-collectinos4.version>
 		<apache.commons-lang3.version>3.12.0</apache.commons-lang3.version>
+		<auth0-spring-security-api.version>1.5.1</auth0-spring-security-api.version>
 		<aws-java-sdk-s3.version>1.12.315</aws-java-sdk-s3.version>
 		<guava.version>31.1-jre</guava.version>
 		<hibernate.bean-validator.version>6.2.1.Final</hibernate.bean-validator.version>
@@ -72,6 +73,12 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-oauth2-jose</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>auth0-spring-security-api</artifactId>
+			<version>${auth0-spring-security-api.version}</version>
 		</dependency>
 
 		<dependency>

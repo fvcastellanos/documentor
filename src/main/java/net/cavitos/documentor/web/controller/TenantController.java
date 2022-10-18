@@ -40,6 +40,7 @@ public class TenantController extends BaseController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('SCOPE_admin')")
     public ResponseEntity<Page<Tenant>> getTenants(@RequestParam(defaultValue = DEFAULT_SIZE) final int size,
                                                    @RequestParam(defaultValue = DEFAULT_PAGE) final int page) {
 
@@ -54,6 +55,7 @@ public class TenantController extends BaseController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_admin')")
     public ResponseEntity<Tenant> getTenantById(@PathVariable final String id) {
 
         var tenant = tenantService.getTenantById(id);
@@ -63,6 +65,7 @@ public class TenantController extends BaseController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('SCOPE_admin')")
     public ResponseEntity<Tenant> newTenant(@RequestBody @Valid final Tenant tenant) {
 
         final var storedTenant = tenantService.newTenant(tenant);
@@ -72,6 +75,7 @@ public class TenantController extends BaseController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_admin')")
     public ResponseEntity<Tenant> updateTenant(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                                @RequestBody @Valid final Tenant tenant) {
 
