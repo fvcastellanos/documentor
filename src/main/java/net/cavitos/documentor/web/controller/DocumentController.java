@@ -51,7 +51,7 @@ public class DocumentController extends BaseController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<Page<Document>> search(@RequestParam(defaultValue = "") @NotEmpty @Size(max = 50) final String text,
                                                  @RequestParam(defaultValue = "0") final int page,
                                                  @RequestParam(defaultValue = "20") final int size,
@@ -71,7 +71,7 @@ public class DocumentController extends BaseController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<Document> getById(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                             final Principal principal) {
 
@@ -83,7 +83,7 @@ public class DocumentController extends BaseController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<Document> addDocument(@RequestBody @Valid final Document document,
                                                 final Principal principal) {
 
@@ -96,7 +96,7 @@ public class DocumentController extends BaseController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<Document> updateDocument(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                                    @RequestBody @Valid final Document document,
                                                    final Principal principal) {
@@ -110,7 +110,7 @@ public class DocumentController extends BaseController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<Void> deleteDocument(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                                final Principal principal) {
 
@@ -123,7 +123,7 @@ public class DocumentController extends BaseController {
     // --------------------------------------------------------------------------------------------------------
 
     @PostMapping("/{id}/uploads")
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<Document> uploadDocument(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                                         @RequestParam("files") @Valid @NotNull final List<MultipartFile> files,
                                                         final Principal principal) {
@@ -137,7 +137,7 @@ public class DocumentController extends BaseController {
     }
 
     @GetMapping("/{id}/uploads")
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<Page<FileUpload>> getUploads(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                                    final Principal principal) {
 
@@ -153,7 +153,7 @@ public class DocumentController extends BaseController {
     }
 
     @GetMapping("/{id}/uploads/{uploadId}")
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<FileUpload> getUploadById(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                                     @PathVariable("uploadId") @NotEmpty @Size(max = 50) final String uploadId,
                                                     final Principal principal) {
@@ -166,7 +166,7 @@ public class DocumentController extends BaseController {
     }
 
     @DeleteMapping("/{id}/uploads/{uploadId}")
-    @PreAuthorize("hasAuthority('SCOPE_user')")
+    @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<Void> deleteDocument(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                                @PathVariable("uploadId") @NotEmpty @Size(max = 50) final String uploadId,
                                                final Principal principal) {

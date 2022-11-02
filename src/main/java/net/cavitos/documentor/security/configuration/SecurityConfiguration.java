@@ -17,6 +17,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -63,6 +65,7 @@ public class SecurityConfiguration {
                             .and()
                             .oauth2ResourceServer()
                             .jwt()
+                            .jwtAuthenticationConverter(jwtAuthenticationConverter())
                             .decoder(jwtDecoder());
         
         return http.build();
@@ -81,6 +84,8 @@ public class SecurityConfiguration {
         return source;
     }
 
+    // ------------------------------------------------------------------------------------------------------
+
     private JwtDecoder jwtDecoder() {
 
         final var withAudience = new AudienceValidator(audience);
@@ -91,6 +96,16 @@ public class SecurityConfiguration {
         jwtDecoder.setJwtValidator(validator);
 
         return jwtDecoder;
+    }
+
+    private JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        authoritiesConverter.setAuthorityPrefix("");
+        authoritiesConverter.setAuthoritiesClaimName("permissions");
+
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
+        return converter;
     }
 
 }

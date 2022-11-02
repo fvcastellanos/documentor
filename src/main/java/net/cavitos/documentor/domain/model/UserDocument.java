@@ -23,12 +23,14 @@ public class UserDocument {
     @Id
     private String id;
 
+    @Indexed
     @NotEmpty
     @Size(max = 50)
     private String provider;
 
     @NotEmpty
     @Size(max = 50)
+    @Indexed(unique = true)
     private String userId;
 
     @NotEmpty

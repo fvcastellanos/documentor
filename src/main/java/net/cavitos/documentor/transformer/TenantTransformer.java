@@ -20,7 +20,7 @@ public final class TenantTransformer {
         tenantDocument.setEmail(tenant.getEmail());
         tenantDocument.setStatus(ActiveStatus.ACTIVE.getValue());
 
-        if (!StringUtils.isBlank(tenant.getStatus())) {
+        if (StringUtils.isNotBlank(tenant.getStatus())) {
 
             final var status = ActiveStatus.of(tenant.getStatus())
                     .getValue();

@@ -6,10 +6,8 @@ import lombok.Setter;
 import lombok.ToString;
 import net.cavitos.documentor.domain.model.status.ActiveStatus;
 import net.cavitos.documentor.domain.validator.ValueOfEnum;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
@@ -17,21 +15,17 @@ import javax.validation.constraints.Size;
 @Setter
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class Tenant extends RepresentationModel<Tenant> {
-
-    @NotEmpty
-    @Size(max = 150)
-    private String name;
+public class User extends RepresentationModel<User> {
 
     @NotEmpty
     @Size(max = 50)
-    @Indexed(unique = true)
-    private String tenantId;
+    private String provider;
 
-    @Email
     @NotEmpty
-    @Size(max = 250)
-    private String email;
+    @Size(max = 50)
+    private String userId;
+
+    private String tenant;
 
     @ValueOfEnum(enumType = ActiveStatus.class)
     private String status;
