@@ -43,7 +43,7 @@ public class TenantController extends BaseController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Page<Tenant>> getTenants(@RequestParam(defaultValue = DEFAULT_SIZE) final int size,
                                                    @RequestParam(defaultValue = DEFAULT_PAGE) final int page) {
 
@@ -58,7 +58,7 @@ public class TenantController extends BaseController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Tenant> getTenantById(@PathVariable final String id) {
 
         var tenant = tenantService.getTenantById(id);
@@ -68,7 +68,7 @@ public class TenantController extends BaseController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('SCOPE_admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Tenant> newTenant(@RequestBody @Valid final Tenant tenant) {
 
         final var storedTenant = tenantService.newTenant(tenant);
@@ -78,7 +78,7 @@ public class TenantController extends BaseController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Tenant> updateTenant(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                                @RequestBody @Valid final Tenant tenant) {
 
@@ -91,7 +91,7 @@ public class TenantController extends BaseController {
     // --------------------------------------------------------------------------------------------------------
 
     @GetMapping("/{id}/users")
-    @PreAuthorize("hasAuthority('SCOPE_admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Page<User>> getUsers(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                                @RequestParam(defaultValue = DEFAULT_SIZE) final int size,
                                                @RequestParam(defaultValue = DEFAULT_PAGE) final int page) {
@@ -107,7 +107,7 @@ public class TenantController extends BaseController {
     }
 
     @GetMapping("/{id}/users/{userId}")
-    @PreAuthorize("hasAuthority('SCOPE_admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<User> getUserById(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                             @PathVariable @NotEmpty @Size(max = 50) final String userId) {
 
@@ -118,7 +118,7 @@ public class TenantController extends BaseController {
     }
 
     @PostMapping("/{id}/users")
-    @PreAuthorize("hasAuthority('SCOPE_admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<User> addUser(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                         @RequestBody @Valid final User user) {
 
@@ -129,7 +129,7 @@ public class TenantController extends BaseController {
     }
 
     @PutMapping("/{id}/users/{userId}")
-    @PreAuthorize("hasAuthority('SCOPE_admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<User> updateUser(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                            @PathVariable @NotEmpty @Size(max = 50) final String userId,
                                            @RequestBody @Valid final UpdateUser updateUser) {
@@ -141,7 +141,7 @@ public class TenantController extends BaseController {
     }
 
     @DeleteMapping("/{id}/users/{userId}")
-    @PreAuthorize("hasAuthority('SCOPE_admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Void> deleteUser(@PathVariable @NotEmpty @Size(max = 50) final String id,
                                            @PathVariable @NotEmpty @Size(max = 50) final String userId) {
 

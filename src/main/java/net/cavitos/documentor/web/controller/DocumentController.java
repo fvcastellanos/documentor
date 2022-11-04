@@ -125,8 +125,8 @@ public class DocumentController extends BaseController {
     @PostMapping("/{id}/uploads")
     @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<Document> uploadDocument(@PathVariable @NotEmpty @Size(max = 50) final String id,
-                                                        @RequestParam("files") @Valid @NotNull final List<MultipartFile> files,
-                                                        final Principal principal) {
+                                                   @RequestParam("files") @Valid @NotNull final List<MultipartFile> files,
+                                                   final Principal principal) {
 
         final var tenant = getUserTenant(principal);
 
@@ -139,7 +139,7 @@ public class DocumentController extends BaseController {
     @GetMapping("/{id}/uploads")
     @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<Page<FileUpload>> getUploads(@PathVariable @NotEmpty @Size(max = 50) final String id,
-                                                   final Principal principal) {
+                                                       final Principal principal) {
 
         final var tenant = getUserTenant(principal);
 
@@ -177,5 +177,4 @@ public class DocumentController extends BaseController {
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
 }
