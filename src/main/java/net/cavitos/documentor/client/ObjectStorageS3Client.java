@@ -7,8 +7,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,20 +45,23 @@ public class ObjectStorageS3Client implements ObjectStorageClient {
 
             LOGGER.info("upload file: {} for tenantId: {}", multipartFile.getOriginalFilename(), tenantId);
 
-            var key = buildFileUrl(tenantId, documentId, multipartFile);
-            var objectMetadata = buildObjectMetadata(multipartFile);
+            final var key = buildFileUrl(tenantId, documentId, multipartFile);
+            final var objectMetadata = buildObjectMetadata(multipartFile);
 
-            var storedDocument = StoredDocument.builder()
+            final var storedDocument = StoredDocument.builder()
                 .fileName(key)
                 .url(subdomainBaseUrl + "/" + key)
                 .build();
 
-            amazonS3.putObject(bucket, key, multipartFile.getInputStream(), objectMetadata);
+            final var request = new PutObjectRequest(bucket, key, multipartFile.getInputStream(), objectMetadata);
+            request.setCannedAcl(CannedAccessControlList.PublicRead);
+
+            amazonS3.putObject(request);
 
             LOGGER.info("file: {} uploaded for tenantId: {}", key, tenantId);
 
             return Optional.of(storedDocument);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
 
             LOGGER.error("can't upload file: {} for tenantId: {} - ", multipartFile.getOriginalFilename(), tenantId, ex);
             return Optional.empty();

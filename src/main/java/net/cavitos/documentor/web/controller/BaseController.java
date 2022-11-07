@@ -1,5 +1,7 @@
 package net.cavitos.documentor.web.controller;
 
+import net.cavitos.documentor.security.domain.UserProfile;
+import net.cavitos.documentor.security.service.UserService;
 import org.springframework.validation.BeanPropertyBindingResult;
 
 import java.security.Principal;
@@ -11,17 +13,27 @@ public abstract class BaseController {
 
     private static final String DEFAULT_TENANT = "default";
 
+    private final UserService userService;
+
+    public BaseController(final UserService userService) {
+
+        this.userService = userService;
+    }
+
     protected BeanPropertyBindingResult buildErrorObject(final Object object) {
 
         return new BeanPropertyBindingResult(object, object.getClass().getName());
     }
 
+    protected UserProfile getUserProfile(Principal principal) {
+
+        return userService.getUserProfile(principal.getName());
+    }
+
     protected String getUserTenant(Principal principal) {
 
-        // Will remove comments once spring security is configured
-//        final var userProfile = getUserProfile(principal);
-//        return userProfile.getTenant();
+        final var userProfile = getUserProfile(principal);
 
-        return DEFAULT_TENANT;
+        return userProfile.getTenant();
     }
 }
