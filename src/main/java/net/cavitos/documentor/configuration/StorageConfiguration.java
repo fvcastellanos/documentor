@@ -26,7 +26,7 @@ public class StorageConfiguration {
     @Value("${documentor.storage.region}")
     private String region;
 
-    @Value("${documentor.storage.base-directory:private/documentor/documents}")
+    @Value("${documentor.storage.base-directory:public/documentor/documents}")
     private String baseDirectory;
 
     @Value("${documentor.storage.bucket:object-cavitos}")
